@@ -1,0 +1,13 @@
+{
+  "name": "MafiaNight",
+  "short_name": "MafiaNight",
+  "description": "Mafia (bazie Mafia), played online. Working name.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#14161c",
+  "theme_color": "#14161c",
+  "lang": "fa",
+  "dir": "rtl",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

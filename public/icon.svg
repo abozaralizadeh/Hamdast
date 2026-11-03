@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="MafiaNight">
+  <rect width="512" height="512" rx="96" fill="#14161c"/>
+  <circle cx="330" cy="190" r="110" fill="#e0b84c"/>
+  <circle cx="380" cy="150" r="100" fill="#14161c"/>
+  <path d="M110 400 L180 270 L250 400 Z" fill="#343949"/>
+  <path d="M200 400 L290 230 L380 400 Z" fill="#272b38"/>
+</svg>

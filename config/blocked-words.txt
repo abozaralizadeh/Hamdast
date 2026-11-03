@@ -1,0 +1,5 @@
+# Words that are not allowed inside a nickname, one per line, lower case.
+# The matching ignores spaces, dots, dashes, underscores and the Persian half-space.
+# This list is deliberately empty. It needs to be filled in by native Farsi and
+# English speakers before a public test (see docs/ROADMAP.md).
+# Impersonation names like admin and moderator are blocked in code already.

@@ -1,0 +1,95 @@
+/* Logical properties only (inline-start, block-end ...) so the same rules work
+   left to right and right to left. A test checks that no physical left/right
+   properties slip in. */
+:root {
+  --bg: #14161c;
+  --panel: #1e212b;
+  --panel-2: #272b38;
+  --line: #343949;
+  --control: #6f7690;
+  --text: #eef0f6;
+  --muted: #a3a9bd;
+  --accent: #e0b84c;
+  --accent-text: #1a1500;
+  --danger: #f0766c;
+  --good: #5cc78a;
+  --focus: #8ab4ff;
+  font-family: Vazirmatn, 'Noto Sans Arabic', Tahoma, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.55; font-size: 16px; }
+#app { max-inline-size: 760px; margin-inline: auto; padding: 12px 16px 96px; }
+h1, h2, h3 { margin: 0 0 8px; line-height: 1.25; }
+h1 { font-size: 1.7rem; }
+h2 { font-size: 1.15rem; }
+p { margin: 0 0 10px; }
+a { color: var(--accent); }
+small, .muted { color: var(--muted); }
+
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-block: 8px; }
+.brand { font-weight: 700; font-size: 1.1rem; color: var(--accent); text-decoration: none; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.grow { flex: 1 1 auto; }
+.stack > * + * { margin-block-start: 12px; }
+
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+.card + .card { margin-block-start: 12px; }
+
+button, input, select {
+  font: inherit; color: inherit; min-block-size: 44px; border-radius: 10px; border: 1px solid var(--control);
+  background: var(--panel-2); padding-inline: 14px;
+}
+input { inline-size: 100%; }
+button { cursor: pointer; }
+button:hover:not(:disabled) { border-color: var(--muted); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 700; }
+button.danger { color: var(--danger); }
+button.small { min-block-size: 36px; padding-inline: 10px; font-size: 0.9rem; }
+button.link { background: none; border: none; min-block-size: 36px; color: var(--accent); text-decoration: underline; padding-inline: 4px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+label { display: block; margin-block: 10px 4px; font-weight: 600; }
+.check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; margin-block: 14px; }
+.check input { inline-size: 22px; min-block-size: 22px; margin: 2px 0 0; flex: none; }
+
+.badge { display: inline-block; padding: 1px 8px; border-radius: 99px; background: var(--panel-2); border: 1px solid var(--line); font-size: 0.8rem; color: var(--muted); }
+.badge.accent { color: var(--accent); border-color: var(--accent); }
+.badge.danger { color: var(--danger); border-color: var(--danger); }
+
+.code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 1.8rem; letter-spacing: 0.2em; font-weight: 700; direction: ltr; unicode-bidi: isolate; }
+.timer { font-variant-numeric: tabular-nums; font-size: 1.4rem; font-weight: 700; }
+
+.players { list-style: none; margin: 0; padding: 0; }
+.players li { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-block-end: 1px solid var(--line); flex-wrap: wrap; }
+.players li:last-child { border-block-end: none; }
+.players .name { font-weight: 600; }
+.players .dead .name { text-decoration: line-through; color: var(--muted); }
+
+.choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-block: 10px; }
+.choices button.selected { border-color: var(--accent); background: #3a3320; }
+
+.role-card { text-align: center; padding: 18px; border: 2px solid var(--accent); border-radius: 16px; background: var(--panel); inline-size: 100%; }
+.role-card .role-name { font-size: 1.8rem; font-weight: 800; color: var(--accent); }
+.role-card.mafia .role-name { color: var(--danger); }
+
+.chat { max-block-size: 260px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; padding: 8px; background: var(--bg); }
+.msg { padding-block: 3px; word-break: break-word; }
+.msg .who { font-weight: 700; margin-inline-end: 6px; }
+.msg.mafia { color: var(--danger); }
+.chat-form { display: flex; gap: 8px; margin-block-start: 8px; }
+.chat-form select { inline-size: auto; }
+
+.banner { padding: 10px 14px; border-radius: 10px; background: #3a2a1f; border: 1px solid var(--danger); margin-block-end: 10px; }
+.notice { padding: 10px 14px; border-radius: 10px; background: var(--panel-2); border: 1px dashed var(--muted); color: var(--muted); }
+.toast { position: fixed; inset-inline: 16px; inset-block-end: 16px; max-inline-size: 460px; margin-inline: auto; padding: 12px 16px; border-radius: 12px; background: #2b1d1d; border: 1px solid var(--danger); z-index: 10; }
+.toast.ok { background: #1d2b22; border-color: var(--good); }
+
+.history p { margin-block: 4px; }
+.winner { font-size: 1.6rem; font-weight: 800; color: var(--accent); text-align: center; margin-block: 8px; }
+.sr { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); }
+
+@media (min-width: 720px) { #app { padding-block-start: 24px; } }

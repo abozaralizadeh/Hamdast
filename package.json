@@ -1,0 +1,19 @@
+{
+  "name": "mafianight",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mafia (bazie Mafia), played online. MafiaNight is a working name.",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning src/server/index.js",
+    "dev": "node --watch --env-file-if-exists=.env --disable-warning=ExperimentalWarning src/server/index.js",
+    "test": "node --disable-warning=ExperimentalWarning --test \"test/**/*.test.js\"",
+    "simulate": "node scripts/simulate.js",
+    "reports": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning scripts/reports.js",
+    "bots": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning scripts/bots.js",
+    "load": "node --disable-warning=ExperimentalWarning scripts/load.js"
+  }
+}
