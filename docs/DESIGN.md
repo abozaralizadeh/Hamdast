@@ -35,7 +35,7 @@ The parts:
 | Translations | Two plain dictionaries (Farsi, English), with tests that keys and placeholders match | Enough for two languages. |
 | Styling | CSS logical properties only, enforced by a test | Right to left works without a second layout. |
 | Font | Vazirmatn, one variable file served by the app | Reads well in Farsi and English, works offline, no outside font service. |
-| HTTPS | Caddy, set up by `setup_service.sh` when `DOMAIN` is given | Handles certificates by itself. |
+| HTTPS | Caddy, set up by `setup_service.sh` when `DOMAIN` is given, or an nginx that is already there (`NGINX_SNIPPET`) | Caddy handles certificates by itself. Under nginx the app can live under a path such as `/hamdast/`, because every URL the browser loads is relative. |
 | Voice | An interface in `src/voice/provider.js` and a local fake | The fake carries no audio. See below. |
 
 ### How the parts connect
@@ -206,7 +206,8 @@ All in Farsi and English, phone first.
 ## Logs and operations
 
 - `setup_service.sh` installs and updates everything, and restarts the service.
-- `journalctl -u hamdast.service -f` shows live logs.
+- `journalctl -u hamdast.service -f` shows live logs (the unit is named after `SERVICE_NAME`, so on a shared VM it may be `idea-hamdast`).
+- Open rooms are capped per address (`MAX_ROOMS_PER_IP`) and in total (`MAX_OPEN_ROOMS`). The address used for this lives in memory only and is never saved or logged. Lobbies older than two hours stop counting, so a forgotten tab doesn't lock anyone out.
 - The server also writes `logs/app.log`, rotated at 10 MB with three old files kept, which is easy to copy to a local machine.
 - The database is backed up once a day and old copies are removed.
 - Logs never include chat text, roles, nicknames, session tokens or client addresses. A test checks this.

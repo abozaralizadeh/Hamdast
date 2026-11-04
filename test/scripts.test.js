@@ -90,7 +90,10 @@ test('setup script is valid bash, idempotent in design, and holds no secrets', (
   assert.ok(!/(password|secret|api[_-]?key)\s*=\s*\S+/i.test(text));
 });
 
-test('VS Code debug and task files are valid JSON and cover backend and frontend', () => {
+// setup_service.sh copies the app to the server without .vscode (or .git), and runs the tests there.
+const deployedCopy = !fs.existsSync(path.join(base, '.vscode')) && !fs.existsSync(path.join(base, '.git'));
+
+test('VS Code debug and task files are valid JSON and cover backend and frontend', { skip: deployedCopy && 'not copied to the server' }, () => {
   const launch = JSON.parse(fs.readFileSync(path.join(base, '.vscode/launch.json'), 'utf8'));
   const tasks = JSON.parse(fs.readFileSync(path.join(base, '.vscode/tasks.json'), 'utf8'));
   const names = launch.configurations.map((c) => c.name);
@@ -141,4 +144,16 @@ test('setup_service.sh installs the health check timer next to the backup timer'
   const sh = fs.readFileSync(path.join(base, 'setup_service.sh'), 'utf8');
   assert.match(sh, /-health\.timer/);
   assert.match(sh, /scripts\/healthcheck\.js/);
+});
+
+test('setup_service.sh has a shared VM mode that installs nothing and rolls nginx back on a failed check', () => {
+  const sh = fs.readFileSync(path.join(base, 'setup_service.sh'), 'utf8');
+  const shared = sh.slice(sh.indexOf('if [ -n "${NGINX_SNIPPET}" ]; then'), sh.indexOf('\nelse\n'));
+  assert.ok(shared.length > 100, 'shared mode block found');
+  assert.doesNotMatch(shared, /apt-get|caddy|ufw|certbot|sites-available/i, 'shared mode installs nothing');
+  for (const needle of ['SERVICE_NAME', 'set_env TRUST_PROXY 127.0.0.1', 'set_env HOST 127.0.0.1', 'nginx -t', 'limit_req_zone', 'proxy_buffering off', 'proxy_read_timeout', 'return 301']) {
+    assert.ok(sh.includes(needle), `setup script lacks ${needle}`);
+  }
+  assert.match(sh, /rm -f "\$\{NGINX_SNIPPET\}"/, 'a failed check removes the snippet');
+  assert.match(sh, /rm -f "\$\{ZONE_FILE\}"/, 'a failed check removes the zone file');
 });

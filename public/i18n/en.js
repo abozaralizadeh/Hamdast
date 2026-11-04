@@ -109,6 +109,8 @@ export default {
     nickname_taken: 'Someone in this room already uses that nickname.',
     room_not_found: 'No room with that code.',
     room_full: 'This room is full.',
+    server_busy: 'There are a lot of games running right now. Try again in a little while.',
+    too_many_rooms: 'You already have a few rooms open. Play or leave one of them first.',
     game_started: 'The game has already started.',
     bad_player_count: 'Not the right number of players.',
     forbidden: 'Only the host can do that.',

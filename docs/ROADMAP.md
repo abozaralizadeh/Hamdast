@@ -12,6 +12,8 @@ What works now, and what is left to build or check. Contributions on any open it
 - Farsi (right to left) and English, phone first, with contrast and layout checks
 - Data kept short: games and chat are deleted 24 hours after a game ends
 - `setup_service.sh` for a Linux VM, a daily backup, a health check timer, and a size-limited log file
+- Runs under a path such as `/hamdast/` behind an nginx that is already there, proven by a test that plays a game through a path-stripping proxy
+- Caps on open rooms, per address and in total
 - A load script (`npm run load`) that plays many rooms at once
 
 ## To build
@@ -25,7 +27,7 @@ What works now, and what is left to build or check. Contributions on any open it
 - [ ] Stronger answer to repeat troublemakers. A ban only covers one session token today, because there are no accounts. See "Notes on the data" in [DESIGN.md](DESIGN.md).
 - [ ] Alerts that reach a person when the health check fails (it shows in `systemctl --failed` and the journal today)
 - [ ] Load test with voice on, and a load test on a real server instead of one machine
-- [ ] Run `setup_service.sh` on a fresh VM, then again, to confirm the update path
+- [ ] Run `setup_service.sh` on a fresh VM, then again, to confirm the update path (both the own-VM and the shared nginx mode)
 - [ ] Fill in `config/blocked-words.txt` with help from native Farsi and English speakers (it is empty on purpose)
 - [ ] A second rule set, for example with more roles
 - [ ] Balance: the simulator uses random players, so its win rates say nothing about real balance. Real games are needed to tune role counts and timers.

@@ -88,10 +88,28 @@ test('no third party scripts, fonts or trackers are referenced', () => {
   }
 });
 
+test('the app uses only relative URLs, so it works under a path prefix like /hamdast/', () => {
+  const rootUrl = [
+    /(?:href|src)="\//,
+    /fetch\(['`]\//,
+    /register\(['`]\//,
+    /url\(['"]?\//,
+    /'\/api\/|`\/api\//,
+    /"(?:start_url|scope|src)":\s*"\//,
+    /location\.origin\s*\}\/|location\.origin \+ '\//,
+  ];
+  for (const file of ['index.html', 'app.js', 'style.css', 'sw.js', 'manifest.webmanifest']) {
+    const src = read(file);
+    for (const re of rootUrl) assert.doesNotMatch(src, re, `${file} has a root URL (${re})`);
+  }
+  assert.match(read('app.js'), /register\('sw\.js', \{ scope: '\.\/' \}\)/, 'the service worker is scoped to the app folder');
+});
+
 test('manifest is valid for an installable web app', () => {
   const m = JSON.parse(read('manifest.webmanifest'));
   assert.equal(m.display, 'standalone');
-  assert.equal(m.start_url, '/');
+  assert.equal(m.start_url, './');
+  assert.equal(m.scope, './');
   assert.ok(m.icons.length >= 1);
   for (const icon of m.icons) assert.ok(fs.existsSync(path.join(root, icon.src)));
   assert.match(read('index.html'), /rel="manifest"/);

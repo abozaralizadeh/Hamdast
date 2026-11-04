@@ -4,40 +4,80 @@
 # restarts the service. Watch the logs with:
 #   journalctl -u hamdast.service -f
 #
+# Two ways to run it.
+#
+# 1. A VM of its own (the default). Installs Node, rsync and curl with apt if
+#    they are missing, and with DOMAIN set it also puts Caddy in front:
+#      sudo ./setup_service.sh
+#      sudo DOMAIN=play.example.com ./setup_service.sh
+#
+# 2. A shared VM that already runs nginx, under a path such as /hamdast/.
+#    NGINX_SNIPPET switches this on. It installs nothing and touches no firewall,
+#    no Caddy, no certbot and no nginx site file. It writes exactly two files,
+#    NGINX_SNIPPET and /etc/nginx/conf.d/<service>-limits.conf, checks nginx -t,
+#    and removes both again if the check fails:
+#      sudo SERVICE_NAME=idea-hamdast PORT=8602 BASE_PATH=/hamdast/ \
+#           NGINX_SNIPPET=/etc/nginx/max.d/hamdast.conf ./setup_service.sh
+#    Your nginx server block must include the snippet folder, for example
+#    include /etc/nginx/max.d/*.conf; and nginx.conf must include conf.d/*.conf.
+#
 # Options (environment variables):
-#   DOMAIN=play.example.com   also put Caddy in front for automatic HTTPS
+#   SERVICE_NAME=hamdast      name of the service, its timers, user and /opt folder
+#   PORT=3000                 port the app listens on (always 127.0.0.1 only)
+#   DOMAIN=play.example.com   own VM only: Caddy in front for automatic HTTPS
+#   NGINX_SNIPPET=/path.conf  shared VM: the nginx location file to write
+#   BASE_PATH=/hamdast/       shared VM: the path the app is served under
 #   SKIP_TESTS=1              do not run the tests before restarting
-#   PORT=3000                 port the app listens on (it stays on 127.0.0.1)
 #
 # Nothing in this script contains a secret. Your settings live in
-# /opt/hamdast/.env on the VM and are never overwritten.
+# /opt/<service>/.env on the VM and are never overwritten, only the lines this
+# script owns (PORT, HOST and TRUST_PROXY) are updated.
 set -euo pipefail
 
-APP_NAME=hamdast
+APP_NAME="${SERVICE_NAME:-hamdast}"
 SERVICE="${APP_NAME}.service"
 APP_USER="${APP_NAME}"
 APP_DIR="/opt/${APP_NAME}"
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PORT="${PORT:-3000}"
 DOMAIN="${DOMAIN:-}"
+NGINX_SNIPPET="${NGINX_SNIPPET:-}"
+BASE_PATH="${BASE_PATH:-/hamdast/}"
 NODE_MAJOR=24
 
 say() { printf '\n==> %s\n' "$*"; }
 die() { printf 'Error: %s\n' "$*" >&2; exit 1; }
 
 [ "$(id -u)" -eq 0 ] || die "run this as root (sudo ./setup_service.sh)"
-command -v apt-get >/dev/null || die "this script expects Debian or Ubuntu (apt-get not found)"
-
-say "Installing system packages"
-export DEBIAN_FRONTEND=noninteractive
-apt-get update -y
-apt-get install -y --no-install-recommends curl ca-certificates rsync
+[[ "${APP_NAME}" =~ ^[a-z][a-z0-9-]*$ ]] || die "SERVICE_NAME may only have lowercase letters, digits and dashes"
+[ -z "${PORT:-}" ] || [[ "${PORT}" =~ ^[0-9]+$ ]] || die "PORT must be a number"
 
 node_ok() { command -v node >/dev/null && [ "$(node -p 'process.versions.node.split(".")[0]')" -ge "${NODE_MAJOR}" ]; }
-if ! node_ok; then
-  say "Installing Node.js ${NODE_MAJOR}"
-  curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | bash -
-  apt-get install -y nodejs
+
+if [ -n "${NGINX_SNIPPET}" ]; then
+  say "Shared VM mode: nginx at ${BASE_PATH}, nothing gets installed"
+  [ -z "${DOMAIN}" ] || die "DOMAIN and NGINX_SNIPPET can't be used together. Leave DOMAIN out on a shared VM."
+  [[ "${BASE_PATH}" == /*/ ]] || die "BASE_PATH must start and end with a slash, like /hamdast/"
+  [[ "${BASE_PATH}" =~ ^[A-Za-z0-9/_-]+$ ]] || die "BASE_PATH may only have letters, digits, dashes, underscores and slashes"
+  [[ "${NGINX_SNIPPET}" == /*.conf ]] || die "NGINX_SNIPPET must be an absolute path ending in .conf"
+  [ -n "${PORT:-}" ] || [ -f "${APP_DIR}/.env" ] || die "set PORT, a shared VM has no safe default port"
+  missing=()
+  node_ok || missing+=("node ${NODE_MAJOR} or newer")
+  for tool in rsync curl nginx systemctl; do command -v "${tool}" >/dev/null || missing+=("${tool}"); done
+  [ ${#missing[@]} -eq 0 ] || die "missing on this VM: ${missing[*]}. Shared mode installs nothing, so add them first."
+  [ -f /etc/nginx/nginx.conf ] || die "/etc/nginx/nginx.conf not found"
+  grep -qE '^\s*include\s+/etc/nginx/conf\.d/\*\.conf' /etc/nginx/nginx.conf \
+    || die "nginx.conf does not include /etc/nginx/conf.d/*.conf, so the rate limit zone can't be added. Nothing changed."
+else
+  command -v apt-get >/dev/null || die "this script expects Debian or Ubuntu (apt-get not found)"
+  say "Installing system packages"
+  export DEBIAN_FRONTEND=noninteractive
+  apt-get update -y
+  apt-get install -y --no-install-recommends curl ca-certificates rsync
+  if ! node_ok; then
+    say "Installing Node.js ${NODE_MAJOR}"
+    curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | bash -
+    apt-get install -y nodejs
+  fi
 fi
 node_ok || die "Node.js ${NODE_MAJOR} or newer is required"
 NODE_BIN="$(command -v node)"
@@ -58,13 +98,27 @@ rsync -a --delete \
   "${LOCAL_EXCLUDES[@]}" \
   "${SRC_DIR}/" "${APP_DIR}/"
 
-if [ ! -f "${APP_DIR}/.env" ]; then
-  say "Creating ${APP_DIR}/.env from .env.example"
-  cp "${APP_DIR}/.env.example" "${APP_DIR}/.env"
-  sed -i "s/^PORT=.*/PORT=${PORT}/" "${APP_DIR}/.env"
-  [ -z "${DOMAIN}" ] || sed -i "s/^TRUST_PROXY=.*/TRUST_PROXY=true/" "${APP_DIR}/.env"
-  chmod 640 "${APP_DIR}/.env"
+ENV_FILE="${APP_DIR}/.env"
+if [ ! -f "${ENV_FILE}" ]; then
+  say "Creating ${ENV_FILE} from .env.example"
+  cp "${APP_DIR}/.env.example" "${ENV_FILE}"
 fi
+# set_env KEY VALUE: replaces the line, or adds it. Everything else in .env stays.
+set_env() {
+  if grep -q "^$1=" "${ENV_FILE}"; then sed -i "s|^$1=.*|$1=$2|" "${ENV_FILE}"; else echo "$1=$2" >> "${ENV_FILE}"; fi
+}
+[ -z "${PORT:-}" ] || set_env PORT "${PORT}"
+# The app only ever listens on this machine. Caddy or nginx is the public side.
+set_env HOST 127.0.0.1
+if [ -n "${NGINX_SNIPPET}" ]; then
+  # Trust X-Forwarded-For only when it comes from nginx on this machine.
+  set_env TRUST_PROXY 127.0.0.1
+elif [ -n "${DOMAIN}" ]; then
+  set_env TRUST_PROXY 127.0.0.1
+fi
+PORT="$(grep -E '^PORT=' "${ENV_FILE}" | tail -n 1 | cut -d= -f2)"
+PORT="${PORT:-3000}"
+chmod 640 "${ENV_FILE}"
 chown -R "${APP_USER}:${APP_USER}" "${APP_DIR}"
 
 if [ -z "${SKIP_TESTS:-}" ]; then
@@ -76,7 +130,7 @@ fi
 say "Writing the systemd service"
 cat > "/etc/systemd/system/${SERVICE}" <<UNIT
 [Unit]
-Description=Hamdast game server
+Description=Hamdast game server (${APP_NAME})
 After=network.target
 
 [Service]
@@ -166,6 +220,54 @@ CADDY
   systemctl reload caddy || systemctl restart caddy
 fi
 
+if [ -n "${NGINX_SNIPPET}" ]; then
+  ZONE="${APP_NAME//-/_}"
+  ZONE_FILE="/etc/nginx/conf.d/${APP_NAME}-limits.conf"
+  say "nginx: ${BASE_PATH} goes to 127.0.0.1:${PORT}"
+  mkdir -p "$(dirname "${NGINX_SNIPPET}")"
+  had_snippet=false; had_zone=false
+  if [ -f "${NGINX_SNIPPET}" ]; then cp "${NGINX_SNIPPET}" "${NGINX_SNIPPET}.bak"; had_snippet=true; fi
+  if [ -f "${ZONE_FILE}" ]; then cp "${ZONE_FILE}" "${ZONE_FILE}.bak"; had_zone=true; fi
+  cat > "${ZONE_FILE}" <<NGINX
+# ${APP_NAME}: request rate limit zone, used by ${NGINX_SNIPPET}. Written by setup_service.sh.
+limit_req_zone \$binary_remote_addr zone=${ZONE}:10m rate=10r/s;
+NGINX
+  cat > "${NGINX_SNIPPET}" <<NGINX
+# ${APP_NAME}: written by setup_service.sh from ${SRC_DIR}. Running it again rewrites this file.
+location = ${BASE_PATH%/} { return 301 ${BASE_PATH}; }
+location ${BASE_PATH} {
+    limit_req zone=${ZONE} burst=40 nodelay;
+    limit_req_status 429;
+    client_max_body_size 32k;
+    # The trailing slash strips ${BASE_PATH} so the app sees plain paths.
+    proxy_pass http://127.0.0.1:${PORT}/;
+    proxy_http_version 1.1;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Forwarded-For \$remote_addr;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_set_header Connection "";
+    # The live game updates are one long event stream per player.
+    proxy_buffering off;
+    proxy_cache off;
+    proxy_read_timeout 1h;
+    proxy_send_timeout 1h;
+}
+NGINX
+  NGINX_LOG="$(mktemp)"
+  if nginx -t >"${NGINX_LOG}" 2>&1; then
+    rm -f "${NGINX_SNIPPET}.bak" "${ZONE_FILE}.bak" "${NGINX_LOG}"
+    systemctl reload nginx
+  else
+    cat "${NGINX_LOG}" >&2
+    rm -f "${NGINX_LOG}"
+    if $had_snippet; then mv "${NGINX_SNIPPET}.bak" "${NGINX_SNIPPET}"; else rm -f "${NGINX_SNIPPET}"; fi
+    if $had_zone; then mv "${ZONE_FILE}.bak" "${ZONE_FILE}"; else rm -f "${ZONE_FILE}"; fi
+    die "nginx -t failed, so both nginx files were put back as they were. The app service was not restarted."
+  fi
+  grep -rqsF "$(dirname "${NGINX_SNIPPET}")" /etc/nginx/nginx.conf /etc/nginx/sites-enabled /etc/nginx/conf.d \
+    || echo "Warning: no nginx file seems to include $(dirname "${NGINX_SNIPPET}"). Add include $(dirname "${NGINX_SNIPPET}")/*.conf; to your server block."
+fi
+
 say "Starting the service"
 systemctl daemon-reload
 systemctl enable "${SERVICE}" "${APP_NAME}-backup.timer" "${APP_NAME}-health.timer"
@@ -180,6 +282,7 @@ for _ in $(seq 1 20); do
     echo "Log files:      ${APP_DIR}/logs/app.log (size limited, copy the folder to read it locally)"
     echo "Settings:       ${APP_DIR}/.env (edit, then run this script again or: systemctl restart ${SERVICE})"
     [ -z "${DOMAIN}" ] || echo "Public address: https://${DOMAIN}"
+    [ -z "${NGINX_SNIPPET}" ] || echo "Public path:    ${BASE_PATH} (nginx snippet ${NGINX_SNIPPET})"
     exit 0
   fi
   sleep 1

@@ -69,7 +69,7 @@ The simulator's players vote at random, so its win rates say nothing about real 
 | Rules engine, rooms, chat, timers, reconnect, restart recovery | Real, tested |
 | Browser app in Farsi and English | Real. Checked by hand at desktop and phone width, not yet on real phones. |
 | Voice | **Faked.** There is a voice interface (`src/voice/provider.js`) and a local fake that carries no audio. The server decides who may speak and the app shows it, but no sound is sent. Set `VOICE_PROVIDER=fake` to see the panel. |
-| Hosting and HTTPS | `setup_service.sh` is written and syntax checked. It has not been run on a real VM yet. |
+| Hosting and HTTPS | `setup_service.sh` has two modes: its own VM (with Caddy) or a shared VM behind nginx under a path. The shared mode was tried in a Linux container with nginx. Neither has run on a real VM yet. |
 | Privacy and terms pages | Short drafts, not reviewed by a lawyer |
 | Farsi wording | A first draft that needs a native review |
 | Fonts | Vazirmatn, bundled in `public/fonts/` (SIL Open Font License, see `THIRD_PARTY_NOTICES.md`). Nothing loads from outside. |
@@ -86,6 +86,21 @@ sudo ./setup_service.sh
 On the first run it installs Node, creates a service user and a systemd service, and starts it. Run it again to update and restart. Add `DOMAIN=play.example.com` to put Caddy in front for HTTPS. It also sets up a daily database backup and a health check that runs every minute.
 
 Logs: `journalctl -u hamdast.service -f`. A size-limited file log is in `logs/` next to the app. Logs never contain chat text, roles, nicknames or addresses.
+
+### On a server that already runs nginx, under a path
+
+The app works under a path such as `https://example.com/hamdast/`. Every URL it loads is relative, and the service worker only covers that folder. Turn on the shared mode with `NGINX_SNIPPET`:
+
+```bash
+sudo SERVICE_NAME=idea-hamdast PORT=8602 BASE_PATH=/hamdast/ \
+     NGINX_SNIPPET=/etc/nginx/max.d/hamdast.conf ./setup_service.sh
+```
+
+In this mode the script installs nothing. Node 24, rsync, curl and nginx must already be there, or it stops and says what's missing. It doesn't touch Caddy, the firewall, certificates or any nginx site file. It writes two files: the `location` snippet at `NGINX_SNIPPET` and a rate limit zone in `/etc/nginx/conf.d/<service>-limits.conf`. Then it runs `nginx -t` and reloads, or removes both files again if the check fails. Your nginx `server` block has to include the snippet folder, for example `include /etc/nginx/max.d/*.conf;`.
+
+The app listens on `127.0.0.1` only and trusts `X-Forwarded-For` only from nginx on the same machine (`TRUST_PROXY=127.0.0.1`). Logs: `journalctl -u idea-hamdast -f`.
+
+Each address can have `MAX_ROOMS_PER_IP` open rooms (3 by default), and the whole server `MAX_OPEN_ROOMS` (100). Both are in `.env`.
 
 ## About the demo
 

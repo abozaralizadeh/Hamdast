@@ -8,16 +8,25 @@ const int = (value, fallback) => {
 };
 const bool = (value, fallback) => (value === undefined || value === '' ? fallback : value === 'true' || value === '1');
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
+// TRUST_PROXY: false, true (any proxy), or a comma list of proxy addresses such as 127.0.0.1.
+const trust = (value) => {
+  const v = String(value ?? '').trim();
+  if (v === '' || v === 'false' || v === '0') return false;
+  if (v === 'true' || v === '1') return true;
+  return v.split(',').map((a) => a.trim()).filter(Boolean);
+};
 
 export function loadConfig(env = process.env) {
   return {
     gameName: env.GAME_NAME || 'Hamdast',
     port: int(env.PORT, 3000),
     host: env.HOST || '127.0.0.1',
-    trustProxy: bool(env.TRUST_PROXY, false),
+    trustProxy: trust(env.TRUST_PROXY),
     defaultLanguage: env.DEFAULT_LANGUAGE === 'en' ? 'en' : 'fa',
     minPlayers: clamp(int(env.MIN_PLAYERS, 6), MIN_PLAYERS, MAX_PLAYERS),
     maxPlayers: clamp(int(env.MAX_PLAYERS, 12), MIN_PLAYERS, MAX_PLAYERS),
+    maxOpenRooms: int(env.MAX_OPEN_ROOMS, 100),
+    maxRoomsPerIp: int(env.MAX_ROOMS_PER_IP, 3),
     minAge: int(env.MIN_AGE, 16),
     minPhaseMs: int(env.MIN_PHASE_MS, 10000),
     maxPhaseMs: 15 * 60 * 1000,

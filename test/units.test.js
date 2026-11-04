@@ -46,8 +46,14 @@ test('logger keeps chat text, roles, nicknames and tokens out', () => {
 });
 
 test('logger never throws when the folder cannot be written', () => {
-  const log = createLogger({ dir: '/proc/definitely/not/writable', stdout: false });
+  // A folder inside a plain file can never be made, on any system. (Don't use /proc
+  // for this: on Linux, mkdirSync with recursive never returns for a path there.)
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'hamdast-log-'));
+  const file = path.join(dir, 'plain-file');
+  fs.writeFileSync(file, '');
+  const log = createLogger({ dir: path.join(file, 'logs'), stdout: false });
   assert.doesNotThrow(() => log.info('still fine'));
+  fs.rmSync(dir, { recursive: true });
 });
 
 // ---------- nicknames ----------

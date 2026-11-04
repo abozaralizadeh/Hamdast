@@ -34,12 +34,17 @@ const STATUS_FOR = { unauthorized: 401, rate_limited: 429 };
 export function createApp({ manager, config, logger, limiter, publicDir }) {
   const root = path.resolve(publicDir);
 
+  // The forwarded address is used only when the request came from a trusted proxy.
+  // The last entry is the one that proxy added, earlier ones can be set by the client.
+  const plain = (addr) => String(addr ?? '').replace(/^::ffff:/, '');
   const clientAddress = (req) => {
-    if (config.trustProxy) {
-      const fwd = String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim();
-      if (fwd) return fwd;
+    const peer = plain(req.socket.remoteAddress) || 'unknown';
+    const trusted = config.trustProxy === true || (Array.isArray(config.trustProxy) && config.trustProxy.includes(peer));
+    if (trusted) {
+      const fwd = String(req.headers['x-forwarded-for'] ?? '').split(',').map((a) => a.trim()).filter(Boolean).pop();
+      if (fwd) return plain(fwd);
     }
-    return req.socket.remoteAddress ?? 'unknown';
+    return peer;
   };
 
   function send(res, status, body, headers = {}) {
@@ -147,7 +152,7 @@ export function createApp({ manager, config, logger, limiter, publicDir }) {
 
     if (route === 'POST /api/rooms') {
       if (!limiter.allow(`create:${ip}`, LIMITS.create)) return json(res, 429, { ok: false, error: 'rate_limited' });
-      return reply(res, manager.createRoom(await readJson(req)));
+      return reply(res, manager.createRoom(await readJson(req), { owner: ip }));
     }
     const join = /^\/api\/rooms\/([A-Za-z0-9]{4,8})\/join$/.exec(url.pathname);
     if (join && req.method === 'POST') {

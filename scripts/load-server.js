@@ -10,6 +10,8 @@ const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'hamdast-load-'));
 const config = loadConfig({
   LOG_STDOUT: 'false', MIN_PHASE_MS: '1', INTRO_MS: '40', DAY_MS: '400', VOTE_MS: '400', NIGHT_MS: '150',
   DATA_DIR: path.join(dir, 'data'), LOG_DIR: path.join(dir, 'logs'),
+  // Every bot comes from one address, so the room caps are lifted for the load test.
+  MAX_ROOMS_PER_IP: '100000', MAX_OPEN_ROOMS: '100000',
 });
 const app = buildServer(config);
 app.limiter.allow = () => true;

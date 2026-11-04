@@ -17,6 +17,10 @@ export function testConfig(extra = {}) {
     NIGHT_MS: '120',
     DATA_DIR: path.join(dir, 'data'),
     LOG_DIR: path.join(dir, 'logs'),
+    // Every test client comes from 127.0.0.1, so the room caps are lifted here.
+    // test/basepath.test.js sets them low on purpose to check them.
+    MAX_ROOMS_PER_IP: '1000',
+    MAX_OPEN_ROOMS: '1000',
     ...extra,
   });
   return { config, dir };
@@ -149,4 +153,40 @@ export async function lobbyOf(base, n, names) {
   }
   for (const c of clients) await c.connect();
   return clients;
+}
+
+// A stand-in for the nginx snippet in setup_service.sh: /hamdast → 301 /hamdast/, and
+// /hamdast/… is passed to the app with the prefix stripped. Any request outside the
+// prefix gets a 404 and is kept in `strays`, so a test can prove nothing escaped it.
+// X-Test-Client, when present, is sent on as X-Forwarded-For to play different users.
+export async function startPrefixProxy(target, prefix = '/hamdast/') {
+  const strays = [];
+  const { default: http } = await import('node:http');
+  const proxy = http.createServer((req, res) => {
+    if (req.url === prefix.slice(0, -1)) {
+      res.writeHead(301, { Location: prefix });
+      return res.end();
+    }
+    if (!req.url.startsWith(prefix)) {
+      strays.push(req.url);
+      res.writeHead(404);
+      return res.end();
+    }
+    const headers = { ...req.headers, 'x-forwarded-for': req.headers['x-test-client'] ?? req.socket.remoteAddress };
+    const out = http.request(new URL(req.url.slice(prefix.length - 1), target), { method: req.method, headers }, (up) => {
+      res.writeHead(up.statusCode, up.headers);
+      up.pipe(res);
+    });
+    out.on('error', () => res.destroy());
+    req.pipe(out);
+  });
+  await new Promise((resolve) => proxy.listen(0, '127.0.0.1', resolve));
+  return {
+    base: `http://127.0.0.1:${proxy.address().port}${prefix.slice(0, -1)}`,
+    strays,
+    async stop() {
+      proxy.closeAllConnections?.();
+      await new Promise((resolve) => proxy.close(resolve));
+    },
+  };
 }

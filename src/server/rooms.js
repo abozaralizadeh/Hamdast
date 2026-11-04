@@ -13,6 +13,7 @@ const MAX_CHAT_IN_MEMORY = 200;
 const MAX_CHAT_LENGTH = 300;
 
 const fail = (error, status = 400) => ({ ok: false, error, status });
+const LOBBY_COUNT_MS = 2 * 60 * 60 * 1000;
 const sha256 = (s) => crypto.createHash('sha256').update(s).digest('hex');
 const defaultRng = () => crypto.randomInt(0, 2 ** 32) / 2 ** 32;
 
@@ -78,10 +79,17 @@ export class RoomManager {
     return { seat, token };
   }
 
-  createRoom({ nickname, language, confirmed }) {
+  // owner is the creator's address. It stays in memory to cap rooms per address and is never stored or logged.
+  createRoom({ nickname, language, confirmed }, { owner = null } = {}) {
     if (confirmed !== true) return fail('not_confirmed');
     const nick = checkNickname(nickname, { blockedWords: this.blockedWords });
     if (!nick.ok) return fail(nick.error);
+    // A game in play counts, and so does a lobby for its first two hours. Older lobbies were
+    // most likely left in a closed tab, so they don't lock their creator out.
+    const t = this.now();
+    const open = [...this.rooms.values()].filter((r) => r.status === 'playing' || (r.status === 'lobby' && t - r.createdAt < LOBBY_COUNT_MS));
+    if (open.length >= this.config.maxOpenRooms) return fail('server_busy', 503);
+    if (owner && open.filter((r) => r.owner === owner).length >= this.config.maxRoomsPerIp) return fail('too_many_rooms', 429);
     const room = {
       id: crypto.randomUUID(),
       code: this.#newCode(),
@@ -94,6 +102,7 @@ export class RoomManager {
       game: null,
       chat: [],
       speaker: null,
+      owner,
     };
     const { seat, token } = this.#addSeat(room, nick.nickname, language);
     room.hostSeatId = seat.id;

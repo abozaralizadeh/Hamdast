@@ -131,7 +131,7 @@ async function connectStream() {
   const abort = new AbortController();
   streamAbort = abort;
   try {
-    const res = await fetch('/api/stream', { headers: { Authorization: `Bearer ${state.session.token}` }, signal: abort.signal });
+    const res = await fetch('api/stream', { headers: { Authorization: `Bearer ${state.session.token}` }, signal: abort.signal });
     if (res.status === 401) return endSession();
     if (!res.ok || !res.body) throw new Error('stream');
     state.connected = true;
@@ -224,7 +224,7 @@ function render() {
 
 function topbar() {
   return h('div', { class: 'topbar' },
-    h('a', { class: 'brand', href: '#/' }, h('img', { class: 'brand-mark', src: '/icon.svg', alt: '' }), state.config?.gameName ?? 'Hamdast'),
+    h('a', { class: 'brand', href: '#/' }, h('img', { class: 'brand-mark', src: 'icon.svg', alt: '' }), state.config?.gameName ?? 'Hamdast'),
     h('div', { class: 'row' },
       h('button', { class: 'small', onclick: () => { setLang(state.lang === 'fa' ? 'en' : 'fa'); render(); } }, t('language')),
     ),
@@ -263,8 +263,8 @@ function homeScreen() {
         state.busy = true;
         const code = needsCode ? document.getElementById('code').value.trim().toUpperCase() : null;
         const res = needsCode
-          ? await call('POST', `/api/rooms/${encodeURIComponent(code)}/join`, { nickname, confirmed, language: state.lang })
-          : await call('POST', '/api/rooms', { nickname, confirmed, language: state.lang });
+          ? await call('POST', `api/rooms/${encodeURIComponent(code)}/join`, { nickname, confirmed, language: state.lang })
+          : await call('POST', 'api/rooms', { nickname, confirmed, language: state.lang });
         state.busy = false;
         if (res.ok) {
           location.hash = '#/';
@@ -329,10 +329,10 @@ function playerRow(p, { lobby = false } = {}) {
     h('span', { class: 'grow' }),
     // Kept together so a long row wraps the buttons as one group.
     self ? null : h('span', { class: 'actions' },
-      lobby && v.you.isHost ? h('button', { class: 'small danger', onclick: () => call('POST', '/api/kick', { seatId: p.seatId }) }, t('kick')) : null,
+      lobby && v.you.isHost ? h('button', { class: 'small danger', onclick: () => call('POST', 'api/kick', { seatId: p.seatId }) }, t('kick')) : null,
       p.blocked
         ? h('span', { class: 'badge' }, t('blocked'))
-        : h('button', { class: 'small', onclick: () => call('POST', '/api/block', { seatId: p.seatId }) }, t('block')),
+        : h('button', { class: 'small', onclick: () => call('POST', 'api/block', { seatId: p.seatId }) }, t('block')),
       h('button', { class: 'small', onclick: () => { state.reporting = p.seatId; render(); } }, t('report'))),
   );
 }
@@ -345,7 +345,7 @@ function reportPanel() {
     h('div', { class: 'row' },
       ['abuse', 'cheating', 'spam', 'other'].map((reason) => h('button', {
         onclick: async () => {
-          const res = await call('POST', '/api/report', { seatId: target.seatId, reason });
+          const res = await call('POST', 'api/report', { seatId: target.seatId, reason });
           state.reporting = null;
           if (res.ok) showToast(t('reported'), true); else render();
         },
@@ -368,7 +368,7 @@ function chatPanel(title) {
     const text = input.value.trim();
     if (!text) return;
     input.value = '';
-    const res = await call('POST', '/api/chat', { channel, text });
+    const res = await call('POST', 'api/chat', { channel, text });
     if (!res.ok) {
       const again = document.getElementById('chat-input');
       if (again && !again.value) again.value = text;
@@ -390,13 +390,13 @@ function chatPanel(title) {
 }
 
 function leaveButton() {
-  return h('button', { class: 'danger', onclick: async () => { if (confirm(t('confirmLeave'))) { await api('POST', '/api/leave'); endSession(); } } }, t('leave'));
+  return h('button', { class: 'danger', onclick: async () => { if (confirm(t('confirmLeave'))) { await api('POST', 'api/leave'); endSession(); } } }, t('leave'));
 }
 
 function lobbyScreen() {
   const v = state.view;
   const active = v.players.length;
-  const link = `${location.origin}/#/join/${v.room.code}`;
+  const link = `${location.origin}${location.pathname}#/join/${v.room.code}`;
   const canStart = v.you.isHost && active >= v.room.minPlayers && active <= v.room.maxPlayers;
   const s = v.room.settings;
   const field = (id, key, label) => h('div', null, h('label', { for: id }, label), h('input', { id, type: 'number', inputmode: 'numeric', min: String(Math.ceil((state.config?.phaseBounds.min ?? 10000) / 1000)), value: String(Math.round(s[key] / 1000)) }));
@@ -416,7 +416,7 @@ function lobbyScreen() {
       onsubmit: async (e) => {
         e.preventDefault();
         const ms = (id) => Math.round(Number(document.getElementById(id).value) * 1000);
-        const res = await call('POST', '/api/settings', { dayMs: ms('set-day'), voteMs: ms('set-vote'), nightMs: ms('set-night') });
+        const res = await call('POST', 'api/settings', { dayMs: ms('set-day'), voteMs: ms('set-vote'), nightMs: ms('set-night') });
         if (res.ok) showToast(t('saved'), true);
       },
     },
@@ -425,7 +425,7 @@ function lobbyScreen() {
       h('button', { type: 'submit' }, t('save'))) : null,
     v.you.isHost
       ? h('div', { class: 'host-start' },
-        h('button', { class: 'primary', disabled: !canStart, onclick: () => call('POST', '/api/start') }, t('startGame')),
+        h('button', { class: 'primary', disabled: !canStart, onclick: () => call('POST', 'api/start') }, t('startGame')),
         canStart ? null : h('p', { class: 'muted' }, t('needPlayers', { min: num(v.room.minPlayers), max: num(v.room.maxPlayers), count: num(active) })))
       : h('p', { class: 'notice host-start' }, t('waitingHost')),
     chatPanel(t('chatLobby')),
@@ -463,13 +463,13 @@ function actionPanel() {
   if (a.kind === 'wait') return h('div', { class: 'card' }, h('p', null, g.intro ? t('introNight') : t('nightWait')));
   if (a.kind === 'ready') {
     return h('div', { class: 'card' },
-      h('button', { class: 'primary', disabled: a.selected, onclick: () => call('POST', '/api/action', { type: 'ready' }) }, t('readyToVote')),
+      h('button', { class: 'primary', disabled: a.selected, onclick: () => call('POST', 'api/action', { type: 'ready' }) }, t('readyToVote')),
       a.selected ? h('p', { class: 'muted' }, t('readySent')) : null,
       g.progress ? h('p', { class: 'muted' }, t('progress', { done: num(g.progress.done), total: num(g.progress.total) })) : null);
   }
   const night = a.kind !== 'vote';
   const prompt = { kill: 'chooseKill', save: 'chooseSave', check: 'chooseCheck', vote: 'votePrompt' }[a.kind];
-  const pick = (target) => call('POST', '/api/action', night ? { type: 'night', target } : { type: 'vote', target });
+  const pick = (target) => call('POST', 'api/action', night ? { type: 'night', target } : { type: 'vote', target });
   return h('div', { class: 'card' },
     h('h2', null, t(prompt)),
     h('div', { class: 'choices', 'data-kind': a.kind }, a.options.map((id) => h('button', {
@@ -512,7 +512,7 @@ function gameScreen() {
       g.phase === 'over' ? null : countdown(g.phaseEndsAt)),
     g.phase === 'over' ? h('div', { class: 'card' },
       h('div', { class: 'winner' }, g.winner === 'mafia' ? t('mafiaWin') : t('citizensWin')),
-      v.you.isHost ? h('button', { class: 'primary', onclick: () => call('POST', '/api/rematch') }, t('rematch')) : h('p', { class: 'muted' }, t('waitingRematch'))) : null,
+      v.you.isHost ? h('button', { class: 'primary', onclick: () => call('POST', 'api/rematch') }, t('rematch')) : h('p', { class: 'muted' }, t('waitingRematch'))) : null,
     h('button', { class: `role-card${isMafia ? ' mafia' : ''}${state.revealRole ? '' : ' face-down'}`, 'aria-expanded': String(state.revealRole), onclick: () => { state.revealRole = !state.revealRole; render(); } },
       state.revealRole
         ? [h('div', { class: 'role-label' }, t('yourRole')), h('div', { class: 'role-name' }, t(`role.${role}`)), h('p', null, t(`roleDesc.${role}`)),
@@ -536,7 +536,7 @@ function gameScreen() {
 
 async function init() {
   try {
-    state.config = await (await fetch('/api/config')).json();
+    state.config = await (await fetch('api/config')).json();
   } catch {
     state.config = { gameName: 'Hamdast', defaultLanguage: 'fa', minAge: 16, phaseBounds: { min: 10000, max: 900000 } };
   }
@@ -554,7 +554,7 @@ async function init() {
   } catch { /* ignore a broken saved session */ }
   render();
   const secureEnough = location.protocol === 'https:' || location.hostname === 'localhost';
-  if (secureEnough && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+  if (secureEnough && 'serviceWorker' in navigator) navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => {});
 }
 
 init();
