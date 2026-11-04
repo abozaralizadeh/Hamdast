@@ -1,11 +1,12 @@
-# Deploys the static site in site/ to GitHub Pages.
-# It only runs when started by hand (Actions tab, "Run workflow"), so nothing
-# happens until Pages is switched on in the repository settings
-# (Settings, Pages, Source: GitHub Actions). To deploy on every push that
-# changes site/, add a push trigger with `paths: ['site/**']`.
+# Deploys the static site in site/ to GitHub Pages, on every push to main
+# that changes site/, or by hand from the Actions tab ("Run workflow").
+# Pages must be set to "Source: GitHub Actions" in the repository settings.
 name: Deploy site
 
 on:
+  push:
+    branches: [main]
+    paths: ['site/**']
   workflow_dispatch:
 
 permissions:

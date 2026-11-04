@@ -32,3 +32,8 @@ docker-volumes/
 
 # Tools and OS
 .DS_Store
+
+# Demo recording: raw video and work files, login sessions
+demos/out/
+demos/auth/
+demos/.run-*

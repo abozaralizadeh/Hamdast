@@ -69,7 +69,7 @@ function setLang(lang) {
   store.set(LANG_KEY, state.lang);
   document.documentElement.lang = state.lang;
   document.documentElement.dir = state.lang === 'fa' ? 'rtl' : 'ltr';
-  document.title = state.config?.gameName ?? 'MafiaNight';
+  document.title = state.config?.gameName ?? 'Hamdast';
 }
 
 function showToast(message, ok = false) {
@@ -199,7 +199,14 @@ function keepFocus(fn) {
   }
 }
 
+function phaseName() {
+  const g = state.session ? state.view?.game : null;
+  if (!g) return state.session && state.view ? 'lobby' : 'home';
+  return g.phase === 'night' && g.intro ? 'intro' : g.phase;
+}
+
 function render() {
+  document.body.dataset.phase = phaseName();
   keepFocus(() => {
     const chatBox = document.getElementById('chat-box');
     const pinned = !chatBox || chatBox.scrollTop + chatBox.clientHeight >= chatBox.scrollHeight - 24;
@@ -217,7 +224,7 @@ function render() {
 
 function topbar() {
   return h('div', { class: 'topbar' },
-    h('a', { class: 'brand', href: '#/' }, state.config?.gameName ?? 'MafiaNight'),
+    h('a', { class: 'brand', href: '#/' }, h('img', { class: 'brand-mark', src: '/icon.svg', alt: '' }), state.config?.gameName ?? 'Hamdast'),
     h('div', { class: 'row' },
       h('button', { class: 'small', onclick: () => { setLang(state.lang === 'fa' ? 'en' : 'fa'); render(); } }, t('language')),
     ),
@@ -234,7 +241,7 @@ function screen() {
 }
 
 function pageScreen(title, body) {
-  return h('div', { class: 'stack' }, h('h1', null, title), body, h('a', { href: '#/' }, t('back')));
+  return h('div', { class: 'stack' }, h('h1', null, title), body, h('div', { class: 'row page-links' }, h('a', { href: '#/' }, t('back'))));
 }
 
 function legalScreen(title, lines) {
@@ -275,10 +282,13 @@ function homeScreen() {
     );
   };
   return h('div', { class: 'stack' },
-    h('h1', null, state.config?.gameName ?? 'MafiaNight'),
-    h('p', null, t('tagline')),
-    joining ? [form('join'), h('a', { href: '#/' }, t('create'))] : [form('create'), h('p', { class: 'muted' }, t('join')), h('a', { href: '#/join' }, t('joinRoom'))],
-    h('div', { class: 'row' },
+    h('div', { class: 'hero' },
+      h('h1', null, state.config?.gameName ?? 'Hamdast'),
+      h('p', null, t('tagline'))),
+    joining
+      ? [form('join'), h('p', { class: 'switch-mode' }, h('a', { href: '#/' }, t('create')))]
+      : [form('create'), h('p', { class: 'switch-mode' }, h('a', { href: '#/join' }, t('join')))],
+    h('div', { class: 'row footer-links' },
       h('a', { href: '#/howto' }, t('howTo')), h('a', { href: '#/privacy' }, t('privacy')), h('a', { href: '#/terms' }, t('terms'))),
   );
 }
@@ -287,6 +297,9 @@ const nameOf = (seatId) => state.view.players.find((p) => p.seatId === seatId)?.
 // Isolates keep a Farsi name from scrambling an English sentence, and the other way round.
 const isoName = (seatId) => `\u2068${nameOf(seatId)}\u2069`;
 const playerOf = (seatId) => state.view.players.find((p) => p.seatId === seatId);
+// A coloured initial for each seat. The colour follows the seat order, so it stays the same all game.
+const hueOf = (seatId) => String(Math.max(0, state.view.players.findIndex((p) => p.seatId === seatId)) % 8);
+const avatar = (seatId) => h('span', { class: 'avatar', 'data-hue': hueOf(seatId), 'aria-hidden': 'true' }, Array.from(nameOf(seatId))[0]?.toUpperCase() ?? '?');
 
 function countdown(endsAt) {
   return h('span', { class: 'timer', 'data-ends': endsAt ?? '' }, '');
@@ -306,6 +319,7 @@ function playerRow(p, { lobby = false } = {}) {
   const v = state.view;
   const self = p.seatId === v.you.seatId;
   return h('li', { class: p.alive ? '' : 'dead' },
+    avatar(p.seatId),
     h('span', { class: 'name' }, p.nickname),
     self ? h('span', { class: 'badge accent' }, t('you')) : null,
     p.seatId === v.room.hostSeatId ? h('span', { class: 'badge' }, t('host')) : null,
@@ -313,11 +327,13 @@ function playerRow(p, { lobby = false } = {}) {
     !p.alive && !lobby ? h('span', { class: 'badge' }, t('out')) : null,
     p.left ? h('span', { class: 'badge' }, t('left')) : p.absent ? h('span', { class: 'badge' }, t('absent')) : p.away ? h('span', { class: 'badge' }, t('away')) : null,
     h('span', { class: 'grow' }),
-    !self && lobby && v.you.isHost ? h('button', { class: 'small danger', onclick: () => call('POST', '/api/kick', { seatId: p.seatId }) }, t('kick')) : null,
-    !self ? (p.blocked
-      ? h('span', { class: 'badge' }, t('blocked'))
-      : h('button', { class: 'small', onclick: () => call('POST', '/api/block', { seatId: p.seatId }) }, t('block'))) : null,
-    !self ? h('button', { class: 'small', onclick: () => { state.reporting = p.seatId; render(); } }, t('report')) : null,
+    // Kept together so a long row wraps the buttons as one group.
+    self ? null : h('span', { class: 'actions' },
+      lobby && v.you.isHost ? h('button', { class: 'small danger', onclick: () => call('POST', '/api/kick', { seatId: p.seatId }) }, t('kick')) : null,
+      p.blocked
+        ? h('span', { class: 'badge' }, t('blocked'))
+        : h('button', { class: 'small', onclick: () => call('POST', '/api/block', { seatId: p.seatId }) }, t('block')),
+      h('button', { class: 'small', onclick: () => { state.reporting = p.seatId; render(); } }, t('report'))),
   );
 }
 
@@ -361,8 +377,8 @@ function chatPanel(title) {
   return h('div', { class: 'card' },
     h('h2', null, title),
     h('div', { class: 'chat', id: 'chat-box', role: 'log', 'aria-live': 'polite' },
-      v.chat.length === 0 ? h('p', { class: 'muted' }, t('noMessages')) : v.chat.map((m) => h('div', { class: `msg ${m.channel}` },
-        h('span', { class: 'who' }, nameOf(m.seatId)), m.channel === 'mafia' ? h('span', { class: 'badge danger' }, t('chatMafia')) : null, ' ', m.body))),
+      v.chat.length === 0 ? h('p', { class: 'muted' }, t('noMessages')) : v.chat.map((m) => h('div', { class: `msg ${m.channel}${m.seatId === me.seatId ? ' mine' : ''}` },
+        h('span', { class: 'who' }, nameOf(m.seatId)), m.channel === 'mafia' ? h('span', { class: 'badge danger' }, t('chatMafia')) : null, ' ', h('span', { dir: 'auto' }, m.body)))),
     writable
       ? h('form', { class: 'chat-form', onsubmit: (e) => { e.preventDefault(); send(); } },
         canMafia ? h('select', { id: 'chat-channel', 'aria-label': t('chatLobby'), onchange: (e) => { state.channel = e.target.value; render(); } },
@@ -386,8 +402,8 @@ function lobbyScreen() {
   const field = (id, key, label) => h('div', null, h('label', { for: id }, label), h('input', { id, type: 'number', inputmode: 'numeric', min: String(Math.ceil((state.config?.phaseBounds.min ?? 10000) / 1000)), value: String(Math.round(s[key] / 1000)) }));
   return h('div', { class: 'stack' },
     h('div', { class: 'card' },
-      h('div', { class: 'row' }, h('span', { class: 'muted' }, t('roomCode')), h('span', { class: 'code' }, v.room.code)),
-      h('p', { class: 'muted' }, t('invite')),
+      h('div', { class: 'room-head' }, h('span', { class: 'muted' }, t('roomCode')), h('span', { class: 'code' }, v.room.code)),
+      h('p', { class: 'muted invite' }, t('invite')),
       h('div', { class: 'row' },
         h('input', { readonly: true, dir: 'ltr', value: link, 'aria-label': t('invite'), class: 'grow' }),
         h('button', { onclick: async () => { try { await navigator.clipboard.writeText(link); showToast(t('linkCopied'), true); } catch { document.querySelector('input[readonly]')?.select(); } } }, t('copyLink')))),
@@ -408,12 +424,12 @@ function lobbyScreen() {
       h('div', { class: 'row' }, field('set-day', 'dayMs', t('dayTime')), field('set-vote', 'voteMs', t('voteTime')), field('set-night', 'nightMs', t('nightTime'))),
       h('button', { type: 'submit' }, t('save'))) : null,
     v.you.isHost
-      ? h('div', null,
+      ? h('div', { class: 'host-start' },
         h('button', { class: 'primary', disabled: !canStart, onclick: () => call('POST', '/api/start') }, t('startGame')),
         canStart ? null : h('p', { class: 'muted' }, t('needPlayers', { min: num(v.room.minPlayers), max: num(v.room.maxPlayers), count: num(active) })))
-      : h('p', { class: 'muted' }, t('waitingHost')),
+      : h('p', { class: 'notice host-start' }, t('waitingHost')),
     chatPanel(t('chatLobby')),
-    h('div', { class: 'row' }, h('a', { href: '#/howto', target: '_blank', rel: 'noopener' }, t('howTo')), leaveButton()),
+    h('div', { class: 'row page-links' }, h('a', { href: '#/howto', target: '_blank', rel: 'noopener' }, t('howTo')), leaveButton()),
   );
 }
 
@@ -426,11 +442,11 @@ function historyLines(g) {
   const lines = [];
   for (const ev of g.history) {
     if (ev.type === 'night_result') {
-      lines.push(ev.killed ? t('diedTonight', { day: num(ev.day), name: isoName(ev.killed) }) : t('nobodyDied', { day: num(ev.day) }));
+      lines.push({ head: true, text: ev.killed ? t('diedTonight', { day: num(ev.day), name: isoName(ev.killed) }) : t('nobodyDied', { day: num(ev.day) }) });
     } else if (ev.type === 'vote_result') {
-      lines.push(ev.eliminated ? t('voteOut', { day: num(ev.day), name: isoName(ev.eliminated) }) : t('voteNobody', { day: num(ev.day) }));
+      lines.push({ head: true, text: ev.eliminated ? t('voteOut', { day: num(ev.day), name: isoName(ev.eliminated) }) : t('voteNobody', { day: num(ev.day) }) });
       for (const vote of ev.votes) {
-        lines.push(t('voteDetail', { from: isoName(vote.from), to: vote.to ? isoName(vote.to) : t('skipped') }));
+        lines.push({ head: false, text: t('voteDetail', { from: isoName(vote.from), to: vote.to ? isoName(vote.to) : t('skipped') }) });
       }
     }
   }
@@ -456,13 +472,13 @@ function actionPanel() {
   const pick = (target) => call('POST', '/api/action', night ? { type: 'night', target } : { type: 'vote', target });
   return h('div', { class: 'card' },
     h('h2', null, t(prompt)),
-    h('div', { class: 'choices' }, a.options.map((id) => h('button', {
+    h('div', { class: 'choices', 'data-kind': a.kind }, a.options.map((id) => h('button', {
       class: a.selected === id ? 'selected' : '',
       disabled: a.voted,
       'aria-pressed': a.selected === id ? 'true' : 'false',
       onclick: () => pick(id),
-    }, nameOf(id)))),
-    a.kind === 'vote' ? h('button', { disabled: a.voted, class: a.voted && a.selected === null ? 'selected' : '', onclick: () => pick(null) }, t('skipVote')) : null,
+    }, avatar(id), h('span', null, nameOf(id))))),
+    a.kind === 'vote' ? h('button', { disabled: a.voted, class: `skip${a.voted && a.selected === null ? ' selected' : ''}`, onclick: () => pick(null) }, t('skipVote')) : null,
     night && a.selected ? h('p', { class: 'muted' }, t('actionDone')) : null,
     a.kind === 'vote' && a.voted ? h('p', { class: 'muted' }, a.selected ? t('votedFor', { name: isoName(a.selected) }) : t('votedSkip')) : null,
     a.kind === 'vote' && g.progress ? h('p', { class: 'muted' }, t('progress', { done: num(g.progress.done), total: num(g.progress.total) })) : null);
@@ -489,29 +505,30 @@ function gameScreen() {
   const team = v.players.filter((p) => p.role && MAFIA_ROLES.includes(p.role) && p.seatId !== v.you.seatId);
   const history = historyLines(g);
   return h('div', { class: 'stack' },
-    h('div', { class: 'card' },
-      h('div', { class: 'row' },
-        h('span', { class: 'badge accent' }, v.room.code),
-        h('h2', { class: 'grow' }, `${phaseLabel(g)}${g.day ? ` · ${num(g.day)}` : ''}`),
-        g.phase === 'over' ? null : countdown(g.phaseEndsAt))),
+    h('div', { class: 'card phase-card' },
+      h('div', { class: 'phase-title grow' },
+        h('h2', null, `${phaseLabel(g)}${g.day && g.phase !== 'over' ? ` ${num(g.day)}` : ''}`),
+        h('span', { class: 'badge' }, v.room.code)),
+      g.phase === 'over' ? null : countdown(g.phaseEndsAt)),
     g.phase === 'over' ? h('div', { class: 'card' },
       h('div', { class: 'winner' }, g.winner === 'mafia' ? t('mafiaWin') : t('citizensWin')),
       v.you.isHost ? h('button', { class: 'primary', onclick: () => call('POST', '/api/rematch') }, t('rematch')) : h('p', { class: 'muted' }, t('waitingRematch'))) : null,
-    h('button', { class: `role-card ${isMafia ? 'mafia' : ''}`, 'aria-expanded': String(state.revealRole), onclick: () => { state.revealRole = !state.revealRole; render(); } },
+    h('button', { class: `role-card${isMafia ? ' mafia' : ''}${state.revealRole ? '' : ' face-down'}`, 'aria-expanded': String(state.revealRole), onclick: () => { state.revealRole = !state.revealRole; render(); } },
       state.revealRole
-        ? [h('div', { class: 'muted' }, t('yourRole')), h('div', { class: 'role-name' }, t(`role.${role}`)), h('p', null, t(`roleDesc.${role}`)),
+        ? [h('div', { class: 'role-label' }, t('yourRole')), h('div', { class: 'role-name' }, t(`role.${role}`)), h('p', null, t(`roleDesc.${role}`)),
           team.length ? h('p', null, `${t('yourTeam')}: ${team.map((p) => `${p.nickname} (${t(`role.${p.role}`)})`).join('، ')}`) : null,
           h('small', { class: 'muted' }, t('tapToHide'))]
         : h('div', null, t('tapToShow'))),
     actionPanel(),
-    v.you.checks.length ? h('div', { class: 'card' }, h('h2', null, t('checks')),
+    v.you.checks.length ? h('div', { class: 'card checks' }, h('h2', null, t('checks')),
       v.you.checks.map((c) => h('p', null, t('checkResult', { name: isoName(c.target), result: c.isMafia ? t('isMafia') : t('notMafia') })))) : null,
-    history.length ? h('div', { class: 'card history' }, h('h2', null, t('history')), history.map((l) => h('p', null, l))) : null,
+    history.length ? h('div', { class: 'card history' }, h('h2', null, t('history')),
+      h('div', { class: 'lines' }, history.map((l) => h('p', { class: l.head ? 'headline' : '' }, l.text)))) : null,
     voicePanel(),
     h('div', { class: 'card' }, h('h2', null, t('players')), h('ul', { class: 'players' }, v.players.map((p) => playerRow(p)))),
     state.reporting ? reportPanel() : null,
     chatPanel(g.phase === 'day' ? t('chatDay') : t('chatLobby')),
-    h('div', { class: 'row' }, h('a', { href: '#/howto', target: '_blank', rel: 'noopener' }, t('howTo')), leaveButton()),
+    h('div', { class: 'row page-links' }, h('a', { href: '#/howto', target: '_blank', rel: 'noopener' }, t('howTo')), leaveButton()),
   );
 }
 
@@ -521,7 +538,7 @@ async function init() {
   try {
     state.config = await (await fetch('/api/config')).json();
   } catch {
-    state.config = { gameName: 'MafiaNight', defaultLanguage: 'fa', minAge: 16, phaseBounds: { min: 10000, max: 900000 } };
+    state.config = { gameName: 'Hamdast', defaultLanguage: 'fa', minAge: 16, phaseBounds: { min: 10000, max: 900000 } };
   }
   const saved = store.get(LANG_KEY);
   const browser = (navigator.language || '').toLowerCase().startsWith('fa') ? 'fa' : null;

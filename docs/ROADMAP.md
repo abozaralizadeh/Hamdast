@@ -19,7 +19,7 @@ What works now, and what is left to build or check. Contributions on any open it
 - [ ] **Real voice.** The server already decides who may speak (turns by day, muted at night and during votes) and tells a voice provider. Only a fake provider exists, and it carries no audio. A real provider needs a self-hosted voice server such as LiveKit, working over TLS on port 443.
 - [ ] Fall back to text when voice can't connect
 - [ ] Automated browser tests (the screens were only checked by hand so far)
-- [ ] Bundle a Farsi web font with a licence that allows it (the app uses system fonts today)
+- [x] Bundle a Farsi web font with a licence that allows it (Vazirmatn, SIL Open Font License)
 - [ ] A screen reader pass, and checks on real Android and iPhone browsers, including older phones
 - [ ] Check install as a home screen app (the manifest, icon and service worker exist but were never tried on a real device)
 - [ ] Stronger answer to repeat troublemakers. A ban only covers one session token today, because there are no accounts. See "Notes on the data" in [DESIGN.md](DESIGN.md).

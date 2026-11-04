@@ -2,88 +2,251 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MafiaNight: play Mafia online</title>
-  <meta name="description" content="Play the party game Mafia online in a browser. The app is the moderator, so everyone plays. Farsi and English.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Hamdast: play Mafia online with friends</title>
+  <meta name="description" content="Play the party game Mafia in a browser. Share a link, get a secret role, argue it out. The app runs the game, so nobody has to moderate. Farsi and English.">
+  <meta name="theme-color" content="#0b0d14" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f6f0e4" media="(prefers-color-scheme: light)">
+  <meta name="color-scheme" content="dark light">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Hamdast">
+  <meta property="og:url" content="https://abozaralizadeh.github.io/Hamdast/">
+  <meta property="og:title" content="Hamdast: play Mafia online. Nobody sits out.">
+  <meta property="og:description" content="Share a link, get a secret role, and talk your way through the night. The app runs the game, in Farsi or English.">
+  <meta property="og:image" content="https://abozaralizadeh.github.io/Hamdast/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Hamdast, Mafia played online, with a phone showing a secret role card">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preload" href="fonts/Fraunces.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/Vazirmatn.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
+  <script src="site.js"></script>
 </head>
 <body>
-  <header class="wrap">
-    <p class="brand">MafiaNight <span class="tag">working name</span></p>
-    <h1>Mafia, played online.</h1>
-    <p class="lead">Mafia (bazie Mafia) is the party game where a hidden few try to eliminate everyone else, and the rest talk, bluff and vote to find them. MafiaNight runs it in a browser. Nothing to install, no accounts, and the app is the moderator, so nobody has to sit out.</p>
-    <p class="note">Status: a working prototype, tested on one machine. Not hosted anywhere yet, and the code isn't published yet. This page is the plan for when it is.</p>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="#top" aria-label="Hamdast, back to top">
+        <img src="icon.svg" width="32" height="32" alt="">
+        <span class="word">Hamdast</span>
+        <span class="fa" lang="fa" dir="rtl">همدست</span>
+      </a>
+      <nav class="links" aria-label="Sections">
+        <a href="#how">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#install">Install</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="theme" type="button" aria-label="Switch between night and day theme" title="Night or day">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path class="i-moon" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/><g class="i-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></svg>
+        </button>
+        <a class="btn small ghost" href="https://github.com/abozaralizadeh/Hamdast">GitHub</a>
+      </div>
+    </div>
   </header>
 
-  <main class="wrap">
-    <section>
-      <h2>How a game goes</h2>
-      <ol class="steps">
-        <li><strong>Make a room.</strong> Pick a nickname and share the link with friends. Six to twelve players.</li>
-        <li><strong>Get a role.</strong> The server deals roles in secret: Citizen, Doctor, Detective, Mafia and Godfather. Your browser only ever gets what you're allowed to see.</li>
-        <li><strong>Night.</strong> The Mafia chat in private and choose a victim. The Doctor saves someone. The Detective checks someone.</li>
-        <li><strong>Day.</strong> Everyone talks, then votes. The player with the most votes is out, and a tie means nobody goes.</li>
-        <li><strong>Win.</strong> Citizens win when the Mafia are gone. The Mafia win when they match everyone else.</li>
-      </ol>
-    </section>
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="sky" aria-hidden="true"><span class="moon"></span></div>
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow"><span lang="fa" dir="rtl">همدست</span> means accomplice in Farsi</p>
+          <h1><span>Play Mafia online.</span> <span><em>Nobody</em> sits out.</span></h1>
+          <p class="sub">Send a link, get your role in secret, then talk your way through the night. The app deals, keeps time and counts the votes, so the friend who usually moderates finally gets to play.</p>
+          <div class="cta">
+            <a class="btn primary" href="https://github.com/abozaralizadeh/Hamdast">
+              View on GitHub
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+            </a>
+            <a class="btn ghost" href="#install">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="m5 8 4 4-4 4M12 16h7"/></svg>
+              Install
+            </a>
+          </div>
+          <p class="meta">Farsi and English. 6 to 12 players. Players only need a browser.</p>
+        </div>
 
-    <section>
-      <h2>What it looks like</h2>
-      <p>Real screens from the running prototype, played with bots filling the other seats.</p>
-      <div class="shots">
-        <figure>
-          <img src="img/lobby-farsi.jpg" width="800" height="600" alt="The lobby in Farsi, right to left, showing the room code, invite link and player list">
-          <figcaption>The lobby in Farsi, right to left</figcaption>
-        </figure>
-        <figure>
-          <img src="img/vote-farsi.jpg" width="800" height="600" alt="The voting screen in Farsi with a timer and a button for each player">
-          <figcaption>Voting</figcaption>
-        </figure>
-        <figure class="phone">
-          <img src="img/night-english-phone.jpg" width="750" height="1624" alt="The night screen in English on a phone, with a countdown and a log of what happened">
-          <figcaption>Night, in English on a phone</figcaption>
-        </figure>
-        <figure>
-          <img src="img/game-over-farsi.jpg" width="800" height="600" alt="The game over screen in Farsi announcing the winner, with a play again button">
-          <figcaption>Game over</figcaption>
-        </figure>
+        <div class="hero-stage">
+          <figure class="browser hero-frame">
+            <div class="bar" aria-hidden="true">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="url">127.0.0.1:3000/#/room</span>
+            </div>
+            <video class="demo" muted loop playsinline preload="none" poster="demo/poster.webp" width="1280" height="720" data-src="demo/hero.mp4" aria-label="A recorded game: a role is dealt, players chat and vote, and the Detective checks someone at night"></video>
+          </figure>
+          <p class="stage-note">A real game, recorded. The other five are bots. <a href="demo/tour.mp4">Full video</a></p>
+
+          <button class="role-card" type="button" aria-describedby="role-hint">
+            <span class="face front" aria-hidden="true">
+              <span class="seal"><svg viewBox="0 0 24 24" width="28" height="28"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg></span>
+              <span class="tap">Tap to see your role</span>
+            </span>
+            <span class="face back" aria-live="polite">
+              <span class="label">Your role</span>
+              <span class="role-name">Detective</span>
+              <span class="role-fa" lang="fa" dir="rtl">کارآگاه</span>
+              <span class="role-desc">Each night, check one person. You learn if they are Mafia. The Godfather looks innocent.</span>
+            </span>
+          </button>
+          <p class="sr-only" id="role-hint">Deals you a random role, the way the game does. Tap again to hide it.</p>
+        </div>
       </div>
     </section>
 
-    <section>
-      <h2>What's in it</h2>
-      <ul>
-        <li>Farsi (right to left) and English, phone first</li>
-        <li>Private Mafia chat at night, public chat by day</li>
-        <li>Reconnects after a dropped connection, and games survive a server restart</li>
-        <li>Report, block and host kick</li>
-        <li>Keeps very little: no phone numbers or real names, no recordings, and games and chat are deleted 24 hours after a game ends</li>
-        <li>No dependencies. It runs on plain Node.</li>
-      </ul>
-      <p><strong>Voice is not real yet.</strong> There's a voice interface and a fake that shows whose turn it is to speak, but no audio is carried. For now, talk on any call app and use the in-game chat.</p>
+    <section class="section alt" id="how">
+      <div class="wrap">
+        <p class="eyebrow">How a game goes</p>
+        <h2>From a link to your first lie</h2>
+        <ol class="steps">
+          <li class="step reveal">
+            <div class="phone"><img src="img/step-room.webp" width="560" height="1212" loading="lazy" decoding="async" alt="The lobby on a phone: room code, invite link and six players"></div>
+            <span class="num">1</span>
+            <h3>Make a room</h3>
+            <p>Pick a nickname and send the link to your group chat. No sign-up, no app store. The game starts when six to twelve people are in.</p>
+          </li>
+          <li class="step reveal">
+            <div class="phone"><img src="img/step-role.webp" width="560" height="1212" loading="lazy" decoding="async" alt="A secret role card on a phone: Detective, with what the role can do"></div>
+            <span class="num">2</span>
+            <h3>Get your role</h3>
+            <p>Citizen, Doctor, Detective, Mafia or Godfather. The server keeps every role, and your browser only ever learns your own.</p>
+          </li>
+          <li class="step reveal">
+            <div class="phone"><img src="img/step-vote.webp" width="560" height="1212" loading="lazy" decoding="async" alt="The vote on a phone: a timer and a button for each player"></div>
+            <span class="num">3</span>
+            <h3>Talk, vote, survive</h3>
+            <p>By day you argue and vote someone out. At night the Mafia pick a target, the Doctor guards someone and the Detective checks a suspect.</p>
+          </li>
+        </ol>
+      </div>
     </section>
 
-    <section>
-      <h2>Quick install</h2>
-      <p>You need Node 24 or newer. There's nothing else to install.</p>
-      <pre><code>git clone https://github.com/abozaralizadeh/MafiaNight.git mafianight
-cd mafianight
+    <section class="section" id="features">
+      <div class="wrap">
+        <p class="eyebrow">What's in it</p>
+        <h2>For friends who can't share a table</h2>
+
+        <div class="spotlight reveal">
+          <div class="spot-copy">
+            <h3>Farsi first, right to left</h3>
+            <p>Every screen is laid out right to left first and uses a proper Farsi typeface. English works just as well, and anyone can switch languages in the middle of a game.</p>
+            <p class="fa-line" lang="fa" dir="rtl">مافیا، با دوستانی که دورند.</p>
+          </div>
+          <figure class="browser small-bar">
+            <div class="bar" aria-hidden="true"><span class="dots"><i></i><i></i><i></i></span></div>
+            <img src="img/farsi-vote.webp" width="1400" height="875" loading="lazy" decoding="async" alt="The vote screen in Farsi, right to left, with each player's initial and name">
+          </figure>
+        </div>
+
+        <ul class="cards">
+          <li class="card reveal">
+            <svg class="icon" viewBox="0 0 32 32" width="32" height="32" aria-hidden="true"><path d="M16 5v22M9 27h14M6 10h20"/><path d="M6 10 2.5 18a4 4 0 0 0 7 0L6 10ZM26 10l-3.5 8a4 4 0 0 0 7 0L26 10Z"/></svg>
+            <h3>The app is the moderator</h3>
+            <p>It deals the roles, runs the clock, counts the votes and settles ties. Everyone at the virtual table gets to play.</p>
+          </li>
+          <li class="card reveal">
+            <svg class="icon" viewBox="0 0 32 32" width="32" height="32" aria-hidden="true"><path d="M25 18.5A10 10 0 0 1 13.5 7 10 10 0 1 0 25 18.5Z"/><path d="M21 4h7v5h-4l-3 2V4Z"/></svg>
+            <h3>A private chat for the Mafia</h3>
+            <p>At night the Mafia get their own room to plan. Nobody else receives those messages, not even hidden in the page.</p>
+          </li>
+          <li class="card reveal">
+            <svg class="icon" viewBox="0 0 32 32" width="32" height="32" aria-hidden="true"><path d="M3 16s5-8 13-8 13 8 13 8-5 8-13 8S3 16 3 16Z"/><circle cx="16" cy="16" r="3.5"/><path d="M5 27 27 5"/></svg>
+            <h3>Keeps almost nothing</h3>
+            <p>No phone numbers, real names, recordings or analytics. Games and chat are deleted 24 hours after a game ends.</p>
+          </li>
+          <li class="card reveal">
+            <svg class="icon" viewBox="0 0 32 32" width="32" height="32" aria-hidden="true"><path d="M26 16a10 10 0 0 1-17.3 6.8M6 16A10 10 0 0 1 23.3 9.2"/><path d="M24 3.5v6h-6M8 28.5v-6h6"/></svg>
+            <h3>Drop out, come back</h3>
+            <p>Lost signal on the bus? Open the page again and you're back in your seat. A game even survives a server restart.</p>
+          </li>
+          <li class="card reveal">
+            <svg class="icon" viewBox="0 0 32 32" width="32" height="32" aria-hidden="true"><path d="M16 3 5 7v8c0 7 5 12 11 14 6-2 11-7 11-14V7L16 3Z"/><path d="m11.5 16 3.2 3.2 6-6.4"/></svg>
+            <h3>Report, block, kick</h3>
+            <p>Block a player's chat, report abuse for review, and the host can remove someone from the room before the game starts.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section alt" id="install">
+      <div class="wrap split">
+        <div class="split-head">
+          <p class="eyebrow">Install</p>
+          <h2>Run it on your own machine</h2>
+          <p class="lead">You need Node 24 or newer. There are no npm packages to install, so that's all.</p>
+        </div>
+        <div class="split-body">
+
+        <div class="code reveal">
+          <div class="code-head"><span>Get it and start it</span><button class="copy" type="button">Copy</button></div>
+          <pre><code>git clone https://github.com/abozaralizadeh/Hamdast.git hamdast
+cd hamdast
 npm start</code></pre>
-      <p>Open <code>http://127.0.0.1:3000</code> and create a room. A game needs six players, so to try it alone, add bots to your room:</p>
-      <pre><code>npm run bots -- ROOMCODE 5</code></pre>
-      <p>Run the tests with <code>npm test</code>. To put it on a Linux server, run <code>sudo ./setup_service.sh</code>. It sets up the service, optional HTTPS, a daily backup and a health check. Run it again any time to update.</p>
-      <p>This page can't run the game itself. The game needs its server, because the server holds every secret role and runs the timers. So there's no static demo here, only screenshots.</p>
+        </div>
+        <p>Open <code>http://127.0.0.1:3000</code> and make a room. A game needs six players, so if you're trying it alone, fill the empty seats with bots using your room code:</p>
+        <div class="code reveal">
+          <div class="code-head"><span>Add five bots</span><button class="copy" type="button">Copy</button></div>
+          <pre><code>npm run bots -- ROOMCODE 5</code></pre>
+        </div>
+        <p>On a Debian or Ubuntu server, one script installs Node, sets up the service, a daily backup and a health check. Run it again any time to update. Add a domain and it puts HTTPS in front.</p>
+        <div class="code reveal">
+          <div class="code-head"><span>Put it on a Linux server</span><button class="copy" type="button">Copy</button></div>
+          <pre><code>sudo DOMAIN=play.example.com ./setup_service.sh</code></pre>
+        </div>
+        </div>
+      </div>
     </section>
 
-    <section>
-      <h2>Contributing and license</h2>
-      <p>The code is meant to be free and open. The license is still to be decided. Once the repository is public, issues and pull requests are welcome. The README has the short list of rules for contributing.</p>
+    <section class="section" id="faq">
+      <div class="wrap split">
+        <div class="split-head">
+          <p class="eyebrow">The honest bits</p>
+          <h2>Questions, and what isn't done yet</h2>
+        </div>
+        <div class="faq split-body">
+          <details>
+            <summary>Can I play it online right now?</summary>
+            <p>Not yet. There's no public server. It's a working prototype that you can run yourself in a couple of minutes with the steps above.</p>
+          </details>
+          <details>
+            <summary>Is there voice chat?</summary>
+            <p>Not yet. The voice part is a stand-in: it shows whose turn it is to talk, but carries no sound. For now, keep a call open in any app next to the game.</p>
+          </details>
+          <details>
+            <summary>Why can't this page run a demo game?</summary>
+            <p>Because the server holds every secret role and runs the timers. A static page can't do that without giving the roles away, so this page shows a recording instead.</p>
+          </details>
+          <details>
+            <summary>Is it open source?</summary>
+            <p>It's source available. You can use, study and change it for anything non-commercial, under the PolyForm Noncommercial license. For commercial use, open an issue and ask.</p>
+          </details>
+          <details>
+            <summary>Is the Farsi final?</summary>
+            <p>It's a first draft. It still needs a careful read by native speakers, and the nickname filter's word list is empty for the same reason.</p>
+          </details>
+        </div>
+      </div>
     </section>
   </main>
 
-  <footer class="wrap">
-    <p>MafiaNight is a working name and will probably change.</p>
+  <footer class="footer">
+    <div class="wrap foot-grid">
+      <div>
+        <a class="brand" href="#top"><img src="icon.svg" width="28" height="28" alt=""><span class="word">Hamdast</span></a>
+        <p class="fine">Source available, free for non-commercial use (<a href="https://polyformproject.org/licenses/noncommercial/1.0.0">PolyForm Noncommercial 1.0.0</a>).</p>
+      </div>
+      <nav class="foot-links" aria-label="Project">
+        <a href="https://github.com/abozaralizadeh/Hamdast">Code on GitHub</a>
+        <a href="https://github.com/abozaralizadeh/Hamdast/blob/main/CONTRIBUTING.md">Contributing</a>
+        <a href="https://github.com/abozaralizadeh/Hamdast/issues">Ask about commercial use</a>
+      </nav>
+      <p class="made">Made by <a href="https://abozaralizadeh.github.io/">Abozar Alizadeh</a></p>
+      <p class="fine fonts">Set in Fraunces and Vazirmatn, both under the SIL Open Font License.</p>
+    </div>
   </footer>
 </body>
 </html>

@@ -14,7 +14,7 @@ import { RoomManager } from '../src/server/rooms.js';
 import { seededRng } from '../src/engine/simulate.js';
 import { buildView } from '../src/server/view.js';
 
-const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'mafianight-unit-'));
+const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'hamdast-unit-'));
 const HOUR = 3600 * 1000;
 const DAY = 24 * HOUR;
 

@@ -6,7 +6,7 @@ import path from 'node:path';
 import { loadConfig } from '../src/config.js';
 import { buildServer } from '../src/server/index.js';
 
-const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mafianight-load-'));
+const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'hamdast-load-'));
 const config = loadConfig({
   LOG_STDOUT: 'false', MIN_PHASE_MS: '1', INTRO_MS: '40', DAY_MS: '400', VOTE_MS: '400', NIGHT_MS: '150',
   DATA_DIR: path.join(dir, 'data'), LOG_DIR: path.join(dir, 'logs'),

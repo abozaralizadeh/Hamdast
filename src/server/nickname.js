@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 
 const ALLOWED = /^[\p{L}\p{N}\p{M} _.\-‌]{2,20}$/u;
-const RESERVED = ['admin', 'moderator', 'mod', 'system', 'support', 'host', 'server', 'mafianight', 'staff', 'مدیر', 'ادمین', 'سیستم', 'پشتیبان'];
+const RESERVED = ['admin', 'moderator', 'mod', 'system', 'support', 'host', 'server', 'hamdast', 'staff', 'مدیر', 'ادمین', 'سیستم', 'پشتیبان'];
 
 export const normalize = (s) => s.toLowerCase().replace(/[\s._\-‌]/g, '');
 

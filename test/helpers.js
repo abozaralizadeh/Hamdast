@@ -7,7 +7,7 @@ import { loadConfig } from '../src/config.js';
 import { buildServer } from '../src/server/index.js';
 
 export function testConfig(extra = {}) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mafianight-test-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'hamdast-test-'));
   const config = loadConfig({
     LOG_STDOUT: 'false',
     MIN_PHASE_MS: '1',

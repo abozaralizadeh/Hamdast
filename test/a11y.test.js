@@ -47,6 +47,14 @@ test('text meets WCAG AA contrast (4.5:1) on every surface it appears on', () =>
     }
   }
   assert.ok(ratio(t.good, toastOk) >= 4.5, 'good on the ok toast');
+  // Tinted badges, the Mafia chat bubble and the coloured initials.
+  assert.ok(ratio(t.accent, t['accent-soft']) >= 4.5, 'accent badge');
+  assert.ok(ratio(t.danger, t['danger-soft']) >= 4.5, 'danger badge');
+  assert.ok(ratio(t.text, t['danger-soft']) >= 4.5, 'text in a Mafia chat bubble');
+  assert.ok(ratio(t.muted, selected) >= 4.5, 'name label in my own chat bubble');
+  const hues = [...css.matchAll(/\.avatar\[data-hue='\d'\] \{ background: (#[0-9a-f]{6}); \}/g)].map((m) => m[1]);
+  assert.equal(hues.length, 8);
+  for (const hue of hues) assert.ok(ratio(t.bg, hue) >= 4.5, `avatar initial on ${hue}`);
   assert.ok(ratio(t['accent-text'], t.accent) >= 4.5, 'primary button text');
 });
 

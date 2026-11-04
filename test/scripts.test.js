@@ -43,8 +43,8 @@ test('report review tool lists, dismisses and refuses without a token', async ()
 });
 
 test('backup copies the database, the copy opens, and old copies are pruned', async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mafianight-backup-'));
-  const store = openStore(path.join(dir, 'mafianight.db'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'hamdast-backup-'));
+  const store = openStore(path.join(dir, 'hamdast.db'));
   store.addBan('abc');
   store.close();
   const env = { DATA_DIR: dir, BACKUP_KEEP: '2' };
@@ -57,7 +57,7 @@ test('backup copies the database, the copy opens, and old copies are pruned', as
   const copy = new DatabaseSync(path.join(dir, 'backups', files[0]), { readOnly: true });
   assert.equal(copy.prepare('SELECT COUNT(*) AS n FROM bans').get().n, 1);
   copy.close();
-  const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'mafianight-nodb-'));
+  const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'hamdast-nodb-'));
   assert.match((await node('scripts/backup.js', [], { DATA_DIR: empty })).stdout, /nothing to back up/);
   fs.rmSync(dir, { recursive: true });
   fs.rmSync(empty, { recursive: true });
@@ -84,7 +84,7 @@ test('setup script is valid bash, idempotent in design, and holds no secrets', (
   assert.equal(spawnSync('bash', ['-n', file]).status, 0);
   assert.ok(fs.statSync(file).mode & 0o111, 'script is executable');
   const text = fs.readFileSync(file, 'utf8');
-  for (const needle of ['journalctl -u mafianight.service', 'systemctl restart', "--exclude '.env'", "--exclude 'data'", 'EnvironmentFile', 'backup.timer']) {
+  for (const needle of ['journalctl -u hamdast.service', 'systemctl restart', "--exclude '.env'", "--exclude 'data'", 'EnvironmentFile', 'backup.timer']) {
     assert.ok(text.includes(needle), `setup script lacks ${needle}`);
   }
   assert.ok(!/(password|secret|api[_-]?key)\s*=\s*\S+/i.test(text));

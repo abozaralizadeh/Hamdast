@@ -11,7 +11,7 @@ const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
 
 export function loadConfig(env = process.env) {
   return {
-    gameName: env.GAME_NAME || 'MafiaNight', // working name
+    gameName: env.GAME_NAME || 'Hamdast',
     port: int(env.PORT, 3000),
     host: env.HOST || '127.0.0.1',
     trustProxy: bool(env.TRUST_PROXY, false),

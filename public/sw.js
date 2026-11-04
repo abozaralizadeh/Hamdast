@@ -1,9 +1,9 @@
 // Network first, with the last good copy as a fallback when offline.
 // Game traffic under /api is never cached.
-const CACHE = 'mafianight-shell-1';
+const CACHE = 'hamdast-shell-2';
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(['/', '/style.css', '/app.js', '/i18n/en.js', '/i18n/fa.js'])).then(() => self.skipWaiting()));
+  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(['/', '/style.css', '/app.js', '/i18n/en.js', '/i18n/fa.js', '/fonts/Vazirmatn-wght.woff2'])).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (event) => {

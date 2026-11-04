@@ -14,7 +14,7 @@ const projectRoot = path.resolve(here, '../..');
 
 export function buildServer(config = loadConfig()) {
   const logger = createLogger({ dir: path.resolve(projectRoot, config.logDir), maxBytes: config.logMaxBytes, keep: config.logKeep, stdout: config.logStdout });
-  const store = openStore(path.resolve(projectRoot, config.dataDir, 'mafianight.db'));
+  const store = openStore(path.resolve(projectRoot, config.dataDir, 'hamdast.db'));
   const limiter = createLimiter();
   const voice = createVoice(config);
   const manager = new RoomManager({

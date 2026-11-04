@@ -1,4 +1,10 @@
-# MafiaNight (working name)
+# Hamdast
+
+![A short demo: joining a room, getting a secret role, talking, voting and a night check](site/demo/tour.gif)
+
+*A short recording of the real app. The other five players are bots, so one person could record it alone. [Watch the full video](site/demo/tour.mp4).*
+
+Project page: https://abozaralizadeh.github.io/Hamdast/
 
 Mafia (bazie Mafia) is a party game where a hidden minority tries to eliminate everyone else, and the rest try to find them by talking and voting. This project lets you play it online, in a browser, with nothing to install. The app is the moderator, so everyone gets to play.
 
@@ -6,9 +12,9 @@ It works in Farsi (right to left) and English, and it's built phone first.
 
 **Status:** a working prototype that runs and is tested on one machine. It has not been run on a public server yet. Built-in voice is a fake for now, see the table below.
 
-"MafiaNight" is only a working name and it will probably change.
+**License:** source available, free for non-commercial use (PolyForm Noncommercial 1.0.0, see [LICENSE](LICENSE)). Commercial use needs written permission, asked for through a GitHub issue. This is not an open source license.
 
-![Lobby in Farsi](site/img/lobby-farsi.jpg)
+Hamdast (همدست) is Farsi for "accomplice".
 
 ## What it does
 
@@ -26,8 +32,8 @@ You open the page, pick a nickname and create a private room. You share the link
 You need Node 24 or newer. There are no npm dependencies, so there is nothing to install besides Node.
 
 ```bash
-git clone https://github.com/abozaralizadeh/MafiaNight.git mafianight
-cd mafianight
+git clone https://github.com/abozaralizadeh/Hamdast.git hamdast
+cd hamdast
 npm start
 ```
 
@@ -66,7 +72,7 @@ The simulator's players vote at random, so its win rates say nothing about real 
 | Hosting and HTTPS | `setup_service.sh` is written and syntax checked. It has not been run on a real VM yet. |
 | Privacy and terms pages | Short drafts, not reviewed by a lawyer |
 | Farsi wording | A first draft that needs a native review |
-| Fonts | System fonts. No Farsi web font is bundled yet. |
+| Fonts | Vazirmatn, bundled in `public/fonts/` (SIL Open Font License, see `THIRD_PARTY_NOTICES.md`). Nothing loads from outside. |
 | Nickname word list | Empty on purpose. It needs native speakers. |
 
 The full list of what is left is in [docs/ROADMAP.md](docs/ROADMAP.md).
@@ -79,7 +85,11 @@ sudo ./setup_service.sh
 
 On the first run it installs Node, creates a service user and a systemd service, and starts it. Run it again to update and restart. Add `DOMAIN=play.example.com` to put Caddy in front for HTTPS. It also sets up a daily database backup and a health check that runs every minute.
 
-Logs: `journalctl -u mafianight.service -f`. A size-limited file log is in `logs/` next to the app. Logs never contain chat text, roles, nicknames or addresses.
+Logs: `journalctl -u hamdast.service -f`. A size-limited file log is in `logs/` next to the app. Logs never contain chat text, roles, nicknames or addresses.
+
+## About the demo
+
+The demo is a recording of the real app, not a mock-up. `demos/record.sh` starts a throwaway server with a fixed random seed, seats five bot players, and records a browser joining as the sixth player. The bots play at random and say a few scripted lines in chat. The recorder is a separate tool, so the video is not rebuilt by `npm test`. The game can't run as a static page, because the server holds every secret role and runs the timers, so the project page shows this recording and not a live demo.
 
 ## Debugging in VS Code
 
@@ -96,15 +106,8 @@ Logs: `journalctl -u mafianight.service -f`. A size-limited file log is in `logs
 
 ## Contributing
 
-Issues and pull requests are welcome once the repository is public. A few things to know first:
-
-- Run `npm test` before you open a pull request, and add a test for what you change.
-- The rules engine in `src/engine/` stays pure: no clock, network, database or randomness of its own.
-- Everything a player receives goes through `src/server/view.js`. If you add a field to a view, extend the leak tests in `test/server.test.js` and `test/units.test.js`.
-- The browser app never builds HTML from strings and uses no inline styles. CSS uses logical properties only, so right to left keeps working. Tests check these.
-- Keep the data minimal. No names, phone numbers, recordings, or chat text and roles in logs.
-- No new dependencies without a good reason. Staying dependency free is a feature.
+Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first. It explains the checks to run, and the one condition for contributions: the author may relicense them, commercial terms included.
 
 ## License
 
-To be decided. Until a license file is added, all rights are reserved.
+Source available under the PolyForm Noncommercial License 1.0.0, see [LICENSE](LICENSE). You can use, study and change the code for non-commercial purposes. For commercial use, ask for written permission by opening an issue. The whole repository, docs and screenshots included, is under this license, except the Vazirmatn and Fraunces fonts, which keep their own license (see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)).

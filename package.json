@@ -1,8 +1,8 @@
 {
-  "name": "mafianight",
+  "name": "hamdast",
   "version": "0.1.0",
   "private": true,
-  "description": "Mafia (bazie Mafia), played online. MafiaNight is a working name.",
+  "description": "Mafia (bazie Mafia), played online, in Farsi and English.",
   "type": "module",
   "engines": {
     "node": ">=24"

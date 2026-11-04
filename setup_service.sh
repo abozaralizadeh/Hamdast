@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Installs and updates MafiaNight on a Debian or Ubuntu VM. Run it as root.
+# Installs and updates Hamdast on a Debian or Ubuntu VM. Run it as root.
 # The first run installs everything. Running it again updates the files and
 # restarts the service. Watch the logs with:
-#   journalctl -u mafianight.service -f
+#   journalctl -u hamdast.service -f
 #
 # Options (environment variables):
 #   DOMAIN=play.example.com   also put Caddy in front for automatic HTTPS
@@ -10,10 +10,10 @@
 #   PORT=3000                 port the app listens on (it stays on 127.0.0.1)
 #
 # Nothing in this script contains a secret. Your settings live in
-# /opt/mafianight/.env on the VM and are never overwritten.
+# /opt/hamdast/.env on the VM and are never overwritten.
 set -euo pipefail
 
-APP_NAME=mafianight
+APP_NAME=hamdast
 SERVICE="${APP_NAME}.service"
 APP_USER="${APP_NAME}"
 APP_DIR="/opt/${APP_NAME}"
@@ -76,7 +76,7 @@ fi
 say "Writing the systemd service"
 cat > "/etc/systemd/system/${SERVICE}" <<UNIT
 [Unit]
-Description=MafiaNight game server (working name)
+Description=Hamdast game server
 After=network.target
 
 [Service]
@@ -100,7 +100,7 @@ UNIT
 say "Writing the daily database backup timer"
 cat > "/etc/systemd/system/${APP_NAME}-backup.service" <<UNIT
 [Unit]
-Description=MafiaNight database backup
+Description=Hamdast database backup
 
 [Service]
 Type=oneshot
@@ -113,7 +113,7 @@ ReadWritePaths=${APP_DIR}/data
 UNIT
 cat > "/etc/systemd/system/${APP_NAME}-backup.timer" <<UNIT
 [Unit]
-Description=Daily MafiaNight database backup
+Description=Daily Hamdast database backup
 
 [Timer]
 OnCalendar=daily
@@ -126,7 +126,7 @@ UNIT
 say "Writing the minute health check timer"
 cat > "/etc/systemd/system/${APP_NAME}-health.service" <<UNIT
 [Unit]
-Description=MafiaNight health check (a failure shows in: systemctl --failed)
+Description=Hamdast health check (a failure shows in: systemctl --failed)
 
 [Service]
 Type=oneshot
@@ -140,7 +140,7 @@ PrivateTmp=true
 UNIT
 cat > "/etc/systemd/system/${APP_NAME}-health.timer" <<UNIT
 [Unit]
-Description=Check MafiaNight every minute
+Description=Check Hamdast every minute
 
 [Timer]
 OnBootSec=2min
@@ -174,7 +174,7 @@ systemctl start "${APP_NAME}-backup.timer" "${APP_NAME}-health.timer"
 
 for _ in $(seq 1 20); do
   if curl -fsS "http://127.0.0.1:${PORT}/api/health" >/dev/null 2>&1; then
-    say "MafiaNight is up on port ${PORT}"
+    say "Hamdast is up on port ${PORT}"
     echo "Live logs:      journalctl -u ${SERVICE} -f"
     echo "Health checks: systemctl list-timers ${APP_NAME}-health.timer, failures: systemctl --failed"
     echo "Log files:      ${APP_DIR}/logs/app.log (size limited, copy the folder to read it locally)"

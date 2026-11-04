@@ -2,7 +2,7 @@
 //   node scripts/healthcheck.js                    checks http://127.0.0.1:$PORT
 //   HEALTH_URL=https://play.example.com node scripts/healthcheck.js
 // On a VM a systemd timer runs this every minute. A failure shows up in
-// `journalctl -u mafianight-health.service` and in `systemctl --failed`.
+// `journalctl -u hamdast-health.service` and in `systemctl --failed`.
 // There is no outside alert service on purpose, that would need an account.
 const base = process.env.HEALTH_URL ?? `http://127.0.0.1:${process.env.PORT ?? 3000}`;
 const started = Date.now();

@@ -1,0 +1,187 @@
+{
+ "name": "tour",
+ "url": "__JOIN_URL__",
+ "viewport": "desktop",
+ "intro": {
+  "title": "Hamdast",
+  "subtitle": "Mafia, played online. Here with five bot friends",
+  "background": "radial-gradient(ellipse at 70% 20%, #2a2416 0%, #0b0d14 60%)",
+  "color": "#f3eee3",
+  "duration": 2200
+ },
+ "steps": [
+  {
+   "caption": "A friend sends you a link and you pick a nickname",
+   "type": "Bahar",
+   "into": "#nick"
+  },
+  {
+   "check": "#age"
+  },
+  {
+   "click": {
+    "role": "button",
+    "name": "ورود به اتاق"
+   },
+   "after": 600
+  },
+  {
+   "waitFor": {
+    "text": "Sara"
+   },
+   "timeout": 10000
+  },
+  {
+   "caption": "Farsi by default, right to left",
+   "wait": 2200
+  },
+  {
+   "caption": "One tap for English",
+   "click": {
+    "role": "button",
+    "name": "English"
+   },
+   "after": 900
+  },
+  {
+   "expect": {
+    "role": "button",
+    "name": "فارسی"
+   }
+  },
+  {
+   "caption": "The host starts the game",
+   "waitFor": {
+    "text": "Introduction night"
+   },
+   "timeout": 25000,
+   "cut": true
+  },
+  {
+   "caption": "Your role is dealt in secret. Only you see it",
+   "wait": 3200,
+   "mark": "role"
+  },
+  {
+   "waitFor": {
+    "role": "button",
+    "name": "Ready to vote"
+   },
+   "timeout": 30000,
+   "mark": "day"
+  },
+  {
+   "caption": "By day, everyone talks",
+   "click": "#chat-input"
+  },
+  {
+   "type": "Reza, you were very quiet last night.",
+   "into": "#chat-input"
+  },
+  {
+   "press": "Enter",
+   "after": 7500
+  },
+  {
+   "caption": "When everyone is ready, the vote opens",
+   "click": {
+    "role": "button",
+    "name": "Ready to vote"
+   },
+   "after": 800
+  },
+  {
+   "waitFor": {
+    "text": "Vote to eliminate a player"
+   },
+   "timeout": 20000,
+   "mark": "vote"
+  },
+  {
+   "caption": "Vote for who you think is Mafia",
+   "click": {
+    "role": "button",
+    "name": "Reza",
+    "exact": true
+   },
+   "after": 2200
+  },
+  {
+   "waitFor": {
+    "text": "Vote 1:"
+   },
+   "timeout": 30000,
+   "mark": "result"
+  },
+  {
+   "caption": "The app counts the votes. Nobody has to moderate",
+   "wait": 2600
+  },
+  {
+   "waitFor": {
+    "text": "Choose who to investigate"
+   },
+   "timeout": 40000,
+   "mark": "night"
+  },
+  {
+   "caption": "At night the Detective checks one player",
+   "wait": 1200
+  },
+  {
+   "click": {
+    "role": "button",
+    "name": "Kian",
+    "exact": true
+   },
+   "optional": true,
+   "after": 1500
+  },
+  {
+   "waitFor": {
+    "text": "Your investigations"
+   },
+   "timeout": 40000,
+   "cut": true,
+   "mark": "check"
+  },
+  {
+   "caption": "Only you ever see the answer",
+   "wait": 3200
+  }
+ ],
+ "outro": {
+  "title": "Hamdast",
+  "subtitle": "Source available, free for non-commercial use",
+  "background": "radial-gradient(ellipse at 70% 20%, #2a2416 0%, #0b0d14 60%)",
+  "color": "#f3eee3",
+  "duration": 2600
+ },
+ "exports": [
+  {
+   "file": "tour.mp4"
+  },
+  {
+   "file": "hero.mp4",
+   "width": 1280,
+   "crf": 28,
+   "trim": [
+    "role",
+    "check+3"
+   ]
+  },
+  {
+   "file": "poster.jpg",
+   "at": "role+1.5"
+  },
+  {
+   "file": "tour.gif",
+   "width": 800,
+   "fps": 10,
+   "trim": [
+    "vote",
+    "check+3.5"
+   ]
+  }
+ ]
+}

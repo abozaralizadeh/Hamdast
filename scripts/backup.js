@@ -6,14 +6,14 @@ import path from 'node:path';
 
 const dataDir = path.resolve(process.env.DATA_DIR ?? './data');
 const keep = Number(process.env.BACKUP_KEEP ?? 7);
-const source = path.join(dataDir, 'mafianight.db');
+const source = path.join(dataDir, 'hamdast.db');
 if (!fs.existsSync(source)) {
   console.log('No database yet, nothing to back up.');
   process.exit(0);
 }
 const dir = path.join(dataDir, 'backups');
 fs.mkdirSync(dir, { recursive: true });
-const target = path.join(dir, `mafianight-${new Date().toISOString().replace(/[:.]/g, '-')}.db`);
+const target = path.join(dir, `hamdast-${new Date().toISOString().replace(/[:.]/g, '-')}.db`);
 const db = new DatabaseSync(source, { readOnly: true });
 await backup(db, target);
 db.close();

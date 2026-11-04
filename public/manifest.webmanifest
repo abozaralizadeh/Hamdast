@@ -1,7 +1,7 @@
 {
-  "name": "MafiaNight",
-  "short_name": "MafiaNight",
-  "description": "Mafia (bazie Mafia), played online. Working name.",
+  "name": "Hamdast",
+  "short_name": "Hamdast",
+  "description": "Mafia (bazie Mafia), played online.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

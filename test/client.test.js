@@ -101,7 +101,7 @@ test('manifest is valid for an installable web app', () => {
 test('docs and client text avoid em dashes', () => {
   const base = path.resolve(import.meta.dirname, '..');
   const files = [
-    'README.md', 'docs/ROADMAP.md', 'docs/RULES.md', 'docs/LOGICAL-FLOW.md', 'docs/DESIGN.md', 'site/index.html', 'site/style.css',
+    'README.md', 'docs/ROADMAP.md', 'docs/RULES.md', 'docs/LOGICAL-FLOW.md', 'docs/DESIGN.md', 'site/index.html', 'site/style.css', 'site/site.js', 'CONTRIBUTING.md', 'THIRD_PARTY_NOTICES.md',
     'public/app.js', 'public/i18n/en.js', 'public/i18n/fa.js', 'public/style.css', 'setup_service.sh',
   ];
   for (const f of files) {
@@ -110,15 +110,17 @@ test('docs and client text avoid em dashes', () => {
   }
 });
 
-test('the Pages site points at real files, and its workflow only runs by hand', () => {
+test('the Pages site points at real files, and deploys only when site/ changes', () => {
   const base = path.resolve(import.meta.dirname, '..');
   const page = fs.readFileSync(path.join(base, 'site/index.html'), 'utf8');
   for (const [, src] of page.matchAll(/(?:src|href)="((?!https?:|#)[^"]+)"/g)) {
     assert.ok(fs.existsSync(path.join(base, 'site', src)), `site/${src} is missing`);
   }
-  assert.doesNotMatch(page, /<script|(?:src|href)="https?:/, 'the site loads nothing from outside');
+  assert.doesNotMatch(page, /src="https?:|<link[^>]+href="https?:|url\(['"]?https?:/, 'the site loads nothing from outside');
+  for (const [tag] of page.matchAll(/<script[^>]*>/g)) assert.equal(tag, '<script src="site.js">', 'only the local site.js, no inline scripts');
+  assert.doesNotMatch(fs.readFileSync(path.join(base, 'site/style.css'), 'utf8'), /url\(['"]?https?:/, 'no outside fonts or images in the CSS');
   const flow = fs.readFileSync(path.join(base, '.github/workflows/pages.yml'), 'utf8');
-  assert.match(flow, /on:\s*\n\s*workflow_dispatch:/);
-  assert.doesNotMatch(flow, /^\s+push:/m);
+  assert.match(flow, /workflow_dispatch:/);
+  assert.match(flow, /push:\s*\n\s*branches: \[main\]\s*\n\s*paths: \['site\/\*\*'\]/);
   assert.match(flow, /path: site/);
 });

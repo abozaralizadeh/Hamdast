@@ -34,7 +34,7 @@ The parts:
 | Tests | `node:test` and a stream client that talks to a real server | There is no automated browser test yet. |
 | Translations | Two plain dictionaries (Farsi, English), with tests that keys and placeholders match | Enough for two languages. |
 | Styling | CSS logical properties only, enforced by a test | Right to left works without a second layout. |
-| Font | System font stack | A Farsi web font is not bundled yet. |
+| Font | Vazirmatn, one variable file served by the app | Reads well in Farsi and English, works offline, no outside font service. |
 | HTTPS | Caddy, set up by `setup_service.sh` when `DOMAIN` is given | Handles certificates by itself. |
 | Voice | An interface in `src/voice/provider.js` and a local fake | The fake carries no audio. See below. |
 
@@ -206,7 +206,7 @@ All in Farsi and English, phone first.
 ## Logs and operations
 
 - `setup_service.sh` installs and updates everything, and restarts the service.
-- `journalctl -u mafianight.service -f` shows live logs.
+- `journalctl -u hamdast.service -f` shows live logs.
 - The server also writes `logs/app.log`, rotated at 10 MB with three old files kept, which is easy to copy to a local machine.
 - The database is backed up once a day and old copies are removed.
 - Logs never include chat text, roles, nicknames, session tokens or client addresses. A test checks this.
